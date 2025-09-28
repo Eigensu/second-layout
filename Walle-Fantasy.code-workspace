@@ -1,0 +1,32 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "Walle11"
+    },
+    {
+      "path": "apps/frontend",
+      "name": "frontend"
+    },
+    {
+      "path": "apps/backend",
+      "name": "backend"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/node_modules": true,
+      "**/.venv": true,
+      "**/venv": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.venv": true,
+      "**/venv": true
+    },
+    "terminal.integrated.cwd": "${workspaceFolder:root}",
+    "editor.formatOnSave": true
+  }
+}
