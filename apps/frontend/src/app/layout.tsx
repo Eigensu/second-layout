@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter, Poppins, JetBrains_Mono } from "next/font/google";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,7 +28,11 @@ export const metadata: Metadata = {
     "The ultimate fantasy cricket platform with modern UI and real-time updates",
   keywords: "fantasy cricket, sports, gaming, team building",
   authors: [{ name: "WalleFantasy Team" }],
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -41,7 +46,9 @@ export default function RootLayout({
       className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable}`}
     >
       <body className={`${inter.className} bg-gray-50 antialiased`}>
-        <div className="min-h-screen">{children}</div>
+        <AuthProvider>
+          <div className="min-h-screen">{children}</div>
+        </AuthProvider>
       </body>
     </html>
   );
