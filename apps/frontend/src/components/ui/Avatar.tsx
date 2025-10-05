@@ -6,6 +6,8 @@ interface AvatarProps {
   src?: string;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
+  /** Optional override for background gradient classes when no src is provided */
+  gradientClassName?: string;
 }
 
 const Avatar: React.FC<AvatarProps> = ({
@@ -13,6 +15,7 @@ const Avatar: React.FC<AvatarProps> = ({
   src,
   size = "md",
   className = "",
+  gradientClassName,
 }) => {
   const getInitials = (name: string): string => {
     return name
@@ -61,9 +64,11 @@ const Avatar: React.FC<AvatarProps> = ({
     );
   }
 
+  const bgClass = gradientClassName || getGradient(name);
+
   return (
     <div
-      className={`${baseClasses} ${getGradient(name)} ${sizeClasses[size]} ${className}`}
+      className={`${baseClasses} ${bgClass} ${sizeClasses[size]} ${className}`}
     >
       {getInitials(name)}
     </div>

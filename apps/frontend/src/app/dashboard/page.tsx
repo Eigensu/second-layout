@@ -4,6 +4,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { LogOut, User, Mail, Calendar } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   return (
@@ -15,6 +16,7 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const { user, logout } = useAuth();
+  const router = useRouter();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -156,6 +158,9 @@ function DashboardContent() {
               <p className="text-sm text-gray-600">
                 Build your dream cricket team
               </p>
+              <div className="mt-4">
+                <Button onClick={() => router.push("/")}>Create Teams</Button>
+              </div>
             </div>
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 text-center">
               <div className="text-4xl mb-3">🏆</div>

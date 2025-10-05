@@ -24,7 +24,7 @@ importers:
     dependencies:
       '@fantasy11/env':
         specifier: workspace:*
-        version: link:../../packages/env
+        version: link:../../packages/env-config
       '@heroicons/react':
         specifier: ^2.0.18
         version: 2.2.0(react@18.3.1)
@@ -102,7 +102,7 @@ importers:
         specifier: ^5.0.0
         version: 5.9.2
 
-  packages/env:
+  packages/env-config:
     dependencies:
       zod:
         specifier: ^3.22.4
