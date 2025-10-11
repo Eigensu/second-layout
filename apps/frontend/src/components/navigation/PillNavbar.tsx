@@ -78,7 +78,7 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
     <>
       <nav className={`mx-auto max-w-3xl px-2 sm:px-4 ${className}`}>
         {/* Desktop Navigation */}
-        <div className="hidden md:flex bg-white rounded-full shadow-md border border-gray-200 p-1.5 items-center justify-center gap-1">
+        <div className="hidden md:flex bg-[#f9f7f3] rounded-full shadow-md border border-gray-200 p-1.5 items-center justify-center gap-1">
           {/* Logo */}
           <div className="flex items-center pl-2 pr-3">
             <Image
@@ -116,7 +116,7 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
         </div>
 
         {/* Mobile Navigation Header */}
-        <div className="md:hidden bg-white rounded-2xl shadow-md border border-gray-200">
+        <div className="md:hidden bg-[#f9f7f3] rounded-2xl shadow-md border border-gray-200">
           <div className="flex items-center justify-between p-3">
             {/* Logo */}
             <div className="flex items-center gap-2">

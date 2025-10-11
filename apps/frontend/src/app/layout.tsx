@@ -51,7 +51,7 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable}`}
     >
-      <body className={`${inter.className} bg-gray-50 antialiased`}>
+      <body className={`${inter.className} antialiased`}>
         <AuthProvider>
           <AuthGate>
             <div className="min-h-screen">{children}</div>
