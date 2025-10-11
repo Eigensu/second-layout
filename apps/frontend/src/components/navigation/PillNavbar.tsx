@@ -2,8 +2,21 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Trophy, Users, Star, Menu, X } from "lucide-react";
+import {
+  Home,
+  Trophy,
+  Users,
+  Star,
+  Menu,
+  X,
+  ChevronDown,
+  LayoutDashboard,
+  Settings,
+  LogOut,
+} from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface PillNavItem {
   id: string;
@@ -50,6 +63,10 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
+  const { isAuthenticated, logout } = useAuth();
+  const userMenuRef = React.useRef<HTMLDivElement>(null);
 
   const currentActiveId = React.useMemo(() => {
     if (activeId) return activeId;
@@ -69,6 +86,34 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
     };
   }, [mobileMenuOpen]);
 
+  // Handle scroll to shrink navbar
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Close user menu when clicking outside
+  React.useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const handleNavigation = (href: string) => {
     router.push(href);
     setMobileMenuOpen(false);
@@ -76,43 +121,124 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
 
   return (
     <>
-      <nav className={`mx-auto max-w-3xl px-2 sm:px-4 ${className}`}>
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 mx-auto px-2 sm:px-4 pt-4 transition-all duration-300 ${className}`}
+        style={{ maxWidth: isScrolled ? "900px" : "1280px" }}
+      >
         {/* Desktop Navigation */}
-        <div className="hidden md:flex bg-[#f9f7f3] rounded-full shadow-md border border-gray-200 p-1.5 items-center justify-center gap-1">
-          {/* Logo */}
-          <div className="flex items-center pl-2 pr-3">
-            <Image
-              src="/logo.jpeg"
-              alt="Wall-E Arena Logo"
-              width={32}
-              height={32}
-              className="rounded-full object-cover"
-            />
+        <div className="hidden md:flex bg-[#f9f7f3] rounded-full shadow-md border border-gray-200 p-1.5 items-center justify-between gap-1 transition-all duration-300">
+          {/* Left side: Logo and Nav Items */}
+          <div className="flex items-center gap-1">
+            {/* Logo */}
+            <div className="flex items-center pl-2 pr-3">
+              <Image
+                src="/logo.jpeg"
+                alt="Wall-E Arena Logo"
+                width={32}
+                height={32}
+                className="rounded-full object-cover"
+              />
+            </div>
+            {items.map((item) => {
+              const isActive = item.id === currentActiveId;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavigation(item.href)}
+                  className={`
+                    flex items-center justify-center space-x-1.5 rounded-full font-medium transition-all duration-300 whitespace-nowrap
+                    ${isScrolled ? "px-4 py-2" : "px-6 py-2.5"}
+                    ${
+                      isActive
+                        ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-md"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }
+                  `}
+                >
+                  {item.icon && (
+                    <span className={isActive ? "text-white" : "text-gray-500"}>
+                      {item.icon}
+                    </span>
+                  )}
+                  <span className="text-sm">{item.label}</span>
+                </button>
+              );
+            })}
           </div>
-          {items.map((item) => {
-            const isActive = item.id === currentActiveId;
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleNavigation(item.href)}
-                className={`
-                  flex items-center justify-center space-x-1.5 px-6 py-2.5 rounded-full font-medium transition-all whitespace-nowrap
-                  ${
-                    isActive
-                      ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-md"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }
-                `}
-              >
-                {item.icon && (
-                  <span className={isActive ? "text-white" : "text-gray-500"}>
-                    {item.icon}
-                  </span>
+
+          {/* Right side: User Menu or Join Button */}
+          <div className="pr-2">
+            {isAuthenticated ? (
+              <div ref={userMenuRef} className="relative">
+                <button
+                  onClick={() => setUserMenuOpen((v) => !v)}
+                  className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2 py-1.5 text-sm font-medium shadow-sm hover:bg-gray-50 transition-colors"
+                  aria-haspopup="menu"
+                  aria-expanded={userMenuOpen}
+                >
+                  <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white text-sm shadow">
+                    U
+                  </div>
+                  <span className="text-gray-700">Account</span>
+                  <ChevronDown
+                    className={`h-4 w-4 text-gray-500 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {userMenuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg z-50"
+                  >
+                    <div
+                      role="menuitem"
+                      tabIndex={0}
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        router.push("/dashboard");
+                      }}
+                      className="cursor-pointer select-none flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <LayoutDashboard className="h-4 w-4 text-primary-600" />
+                      <span>Dashboard</span>
+                    </div>
+                    <div
+                      role="menuitem"
+                      tabIndex={0}
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        router.push("/admin");
+                      }}
+                      className="cursor-pointer select-none flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <Settings className="h-4 w-4 text-primary-600" />
+                      <span>Admin</span>
+                    </div>
+                    <div className="my-1 h-px bg-gray-100" />
+                    <div
+                      role="menuitem"
+                      tabIndex={0}
+                      onClick={async () => {
+                        setUserMenuOpen(false);
+                        await logout();
+                      }}
+                      className="cursor-pointer select-none flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Log Out</span>
+                    </div>
+                  </div>
                 )}
-                <span className="text-sm">{item.label}</span>
-              </button>
-            );
-          })}
+              </div>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="inline-flex items-center rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white px-5 py-2.5 text-sm font-semibold shadow hover:shadow-[0_0_20px_rgba(191,171,121,0.35)] transition"
+              >
+                Join Us
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Mobile Navigation Header */}

@@ -36,25 +36,13 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50 to-gray-50">
       {/* Navigation */}
-      <div className="pt-4 sm:pt-6 pb-3 sm:pb-4">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4">
-          <div className="sm:block sm:relative">
-            <PillNavbar
-              activeId="leaderboard"
-              mobileMenuContent={
-                isAuthenticated ? <MobileUserMenu /> : undefined
-              }
-            />
+      <PillNavbar
+        activeId="leaderboard"
+        mobileMenuContent={isAuthenticated ? <MobileUserMenu /> : undefined}
+      />
 
-            {/* Desktop: Show UserMenu absolutely positioned */}
-            {isAuthenticated && (
-              <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2">
-                <UserMenu />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Spacer to prevent content from hiding under fixed navbar */}
+      <div className="h-20"></div>
 
       <div className="py-4 sm:py-8 px-3 sm:px-4">
         <div className="max-w-7xl mx-auto">

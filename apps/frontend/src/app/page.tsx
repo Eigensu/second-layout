@@ -52,42 +52,14 @@ export default function HomePage() {
         </div>
       ) : (
         <>
-          {/* Top Navbar with standalone Join Us button on the right */}
-          <div className="relative z-50 mt-4 mb-6">
-            <div className="max-w-screen-xl mx-auto px-4 sm:px-6">
-              <div className="sm:block sm:relative">
-                <PillNavbar
-                  className=""
-                  mobileMenuContent={
-                    isAuthenticated ? (
-                      <MobileUserMenu />
-                    ) : (
-                      <Link
-                        href="/auth/login"
-                        className="block w-full text-center rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white px-5 py-2.5 text-sm font-semibold shadow hover:shadow-[0_0_20px_rgba(191,171,121,0.35)] transition"
-                      >
-                        Join Us
-                      </Link>
-                    )
-                  }
-                />
+          {/* Top Navbar */}
+          <PillNavbar
+            className=""
+            mobileMenuContent={isAuthenticated ? <MobileUserMenu /> : undefined}
+          />
 
-                {/* Desktop: Show UserMenu/Join absolutely positioned */}
-                <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2">
-                  {isAuthenticated ? (
-                    <UserMenu />
-                  ) : (
-                    <Link
-                      href="/auth/login"
-                      className="inline-flex items-center rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white px-5 py-2.5 text-sm font-semibold shadow hover:shadow-[0_0_20px_rgba(191,171,121,0.35)] transition"
-                    >
-                      Join Us
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Spacer to prevent content from hiding under fixed navbar */}
+          <div className="h-20"></div>
           {/* Hero Section */}
           <section className="relative rounded-3xl mx-4 mb-8 sm:mb-10">
             {/* Content Container */}

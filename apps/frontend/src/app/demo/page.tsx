@@ -198,25 +198,13 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50">
-      {/* Header: Navbar + User menu */}
-      <div className="relative z-50 py-5">
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6">
-          <div className="sm:block sm:relative">
-            <PillNavbar
-              mobileMenuContent={
-                isAuthenticated ? <MobileUserMenu /> : undefined
-              }
-            />
+      {/* Header: Navbar */}
+      <PillNavbar
+        mobileMenuContent={isAuthenticated ? <MobileUserMenu /> : undefined}
+      />
 
-            {/* Desktop: Show UserMenu absolutely positioned */}
-            {isAuthenticated && (
-              <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2">
-                <UserMenu />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Spacer to prevent content from hiding under fixed navbar */}
+      <div className="h-20"></div>
 
       {/* Hero Section */}
       <div className="px-4 mb-10">
