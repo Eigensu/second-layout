@@ -6,7 +6,6 @@ from app.schemas.player import PlayerOut
 
 router = APIRouter(prefix="/api/players", tags=["players"])
 
-
 def serialize_player(player: Player) -> PlayerOut:
     """Convert Player model to PlayerOut schema"""
     return PlayerOut(
@@ -26,21 +25,19 @@ def serialize_player(player: Player) -> PlayerOut:
         updated_at=player.updated_at,
     )
 
-
 @router.get("", response_model=List[PlayerOut])
 async def list_players(
-    slot: Optional[int] = Query(None, ge=1, le=4),
+    slot: Optional[str] = Query(None, description="Filter players by Slot ObjectId string"),
     limit: int = Query(200, ge=1, le=1000),
     skip: int = Query(0, ge=0),
 ):
-    """Get list of players with optional filtering by slot"""
+    """Get list of players with optional filtering by slot (ObjectId string)."""
     query = {}
     if slot is not None:
-        query = {"slot": slot}
+        query = {"slot": str(slot)}
     
     players = await Player.find(query).sort("+name").skip(skip).limit(limit).to_list()
     return [serialize_player(player) for player in players]
-
 
 @router.get("/{id}", response_model=PlayerOut)
 async def get_player(id: str):

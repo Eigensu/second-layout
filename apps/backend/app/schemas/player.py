@@ -8,7 +8,7 @@ class PlayerOut(BaseModel):
     team: Optional[str] = None
     role: Optional[str] = None
     price: float | int = 0
-    slot: int
+    slot: Optional[str] = Field(default=None, description="Slot ObjectId as string")
     points: float | int = 0
     is_available: Optional[bool] = True
     stats: Optional[dict[str, Any]] = None
@@ -22,11 +22,11 @@ class PlayerOut(BaseModel):
         json_schema_extra = {
             "example": {
                 "id": "68e29ab234bf368cda47fce9",
-                "name": "Ankit Shah",
+                "name": "Ankit shah",
                 "team": "DV SPARTANS",
                 "role": "User",
                 "price": 1000,
-                "slot": 1,
+                "slot": "68ee8700639d27155ccbc1c1",
                 "points": 0,
                 "is_available": True,
             }

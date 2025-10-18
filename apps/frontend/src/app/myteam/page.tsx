@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   PlayerCard,
@@ -16,139 +16,59 @@ import {
 import type { Player } from "@/components";
 import { MobileUserMenu } from "@/components/navigation/MobileUserMenu";
 import { useAuth } from "@/contexts/AuthContext";
-import { NEXT_PUBLIC_API_URL } from "@/config/env";
 import { createTeam } from "@/lib/api/teams";
+import { useTeamBuilder } from "@/hooks/useTeamBuilder";
 
-type ApiPlayer = {
-  id: string;
-  name: string;
-  team?: string;
-  role?: string;
-  price: number;
-  slot: number;
-  points?: number;
-  image_url?: string | null;
-};
+// Data fetching and selection logic moved to useTeamBuilder
 
 export default function MyTeamPage() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
-  const [players, setPlayers] = useState<(Player & { slot: number })[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
-  const [captainId, setCaptainId] = useState<string>("");
-  const [viceCaptainId, setViceCaptainId] = useState<string>("");
-  const [currentStep, setCurrentStep] = useState(1);
-  const [activeSlot, setActiveSlot] = useState<number>(1);
-  const [isStep1Collapsed, setIsStep1Collapsed] = useState(false);
+  const {
+    // data
+    slots,
+    players,
+    loading,
+    error,
+
+    // selection state
+    selectedPlayers,
+    captainId,
+    viceCaptainId,
+    currentStep,
+    activeSlotId,
+    isStep1Collapsed,
+
+    // derived
+    SLOT_LIMITS,
+    selectedCountBySlot,
+    canNextForActiveSlot,
+    isFirstSlot,
+
+    // handlers
+    setCurrentStep,
+    setIsStep1Collapsed,
+    setActiveSlotId,
+    handleClearAll,
+    handlePlayerSelect,
+    handleSetCaptain,
+    handleSetViceCaptain,
+    goToNextSlot,
+    goToPrevSlot,
+  } = useTeamBuilder();
 
   // Team submission states
   const [submitting, setSubmitting] = useState(false);
   const [teamName, setTeamName] = useState("");
 
-  // Slots order for Step 1
-  const SLOT_SEQUENCE = [1, 2, 3, 4] as const;
+  // Display-only label (role already set by hook to slot name)
+  const roleToSlotLabel = (role: string): string => role;
 
-  const SLOT_LIMITS = useMemo(() => ({ 1: 4, 2: 4, 3: 4, 4: 4 }), []);
+  // selectedCountBySlot and canNextForActiveSlot are provided by useTeamBuilder
 
-  const normalizeRole = (role: string): string => {
-    const r = role.toLowerCase();
-    if (r === "batsman" || r === "batsmen") return "Batsman";
-    if (r === "bowler") return "Bowler";
-    if (r === "all-rounder" || r === "allrounder") return "All-Rounder";
-    if (r === "wicket-keeper" || r === "wicketkeeper") return "Wicket-Keeper";
-    return role;
-  };
+  // goToPrevSlot provided by useTeamBuilder
 
-  // Display-only: map canonical role to Slot label
-  const roleToSlotLabel = (role: string): string => {
-    const r = normalizeRole(role);
-    if (r === "Batsman") return "Slot 1";
-    if (r === "Bowler") return "Slot 2";
-    if (r === "All-Rounder") return "Slot 3";
-    if (r === "Wicket-Keeper") return "Slot 4";
-    return r;
-  };
-
-  // Slot to internal canonical role mapping (for selection logic)
-  const slotToRole = (slot: number): string => {
-    if (slot === 1) return "Batsman";
-    if (slot === 2) return "Bowler";
-    if (slot === 3) return "All-Rounder";
-    if (slot === 4) return "Wicket-Keeper";
-    return "Batsman";
-  };
-
-  // Fetch players from backend
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/players`);
-        if (!res.ok) throw new Error(`Failed to load players (${res.status})`);
-        const data: ApiPlayer[] = await res.json();
-        const mapped: (Player & { slot: number })[] = data.map((p) => ({
-          id: p.id,
-          name: p.name,
-          team: p.team || "",
-          role: slotToRole(p.slot),
-          price: Number(p.price) || 0,
-          points: Number(p.points || 0),
-          image: p.image_url || undefined,
-          slot: p.slot,
-          stats: { matches: 0 },
-        }));
-        if (!cancelled) setPlayers(mapped);
-      } catch (e: any) {
-        if (!cancelled) setError(e.message || "Failed to load players");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const selectedCountBySlot = useMemo(() => {
-    const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0 };
-    selectedPlayers.forEach((id) => {
-      const p = players.find((mp) => mp.id === id);
-      if (!p) return;
-      counts[p.slot] = (counts[p.slot] || 0) + 1;
-    });
-    return counts;
-  }, [selectedPlayers, players]);
-
-  const canNextForActiveSlot = useMemo(
-    () => (selectedCountBySlot[activeSlot] || 0) >= 4,
-    [selectedCountBySlot, activeSlot]
-  );
-
-  const goToNextSlot = () => {
-    const idx = SLOT_SEQUENCE.indexOf(
-      activeSlot as (typeof SLOT_SEQUENCE)[number]
-    );
-    const next = SLOT_SEQUENCE[Math.min(idx + 1, SLOT_SEQUENCE.length - 1)];
-    setActiveSlot(next);
-  };
-
-  const goToPrevSlot = () => {
-    const idx = SLOT_SEQUENCE.indexOf(
-      activeSlot as (typeof SLOT_SEQUENCE)[number]
-    );
-    const prev = SLOT_SEQUENCE[Math.max(idx - 1, 0)];
-    setActiveSlot(prev);
-  };
-
-  const isFirstSlot = useMemo(
-    () =>
-      SLOT_SEQUENCE.indexOf(activeSlot as (typeof SLOT_SEQUENCE)[number]) === 0,
-    [activeSlot, SLOT_SEQUENCE]
-  );
+  // isFirstSlot provided by useTeamBuilder
 
   const getRoleAvatarGradient = (role: string) => {
     const r = role.toLowerCase();
@@ -162,58 +82,7 @@ export default function MyTeamPage() {
     return undefined;
   };
 
-  const handleClearAll = () => {
-    setSelectedPlayers([]);
-    setCaptainId("");
-    setViceCaptainId("");
-    setCurrentStep(1);
-    setActiveSlot(1);
-    setIsStep1Collapsed(false);
-  };
-
-  const handlePlayerSelect = (playerId: string) => {
-    setSelectedPlayers((prev) => {
-      // If player is already selected, allow deselection
-      if (prev.includes(playerId)) {
-        return prev.filter((id) => id !== playerId);
-      }
-
-      // Find the player to check their slot
-      const player = players.find((p) => p.id === playerId);
-      if (!player) return prev;
-
-      // Check if the slot limit has been reached
-      const currentSlotCount = prev.filter((id) => {
-        const p = players.find((mp) => mp.id === id);
-        return p?.slot === player.slot;
-      }).length;
-
-      const slotLimit =
-        SLOT_LIMITS[player.slot as keyof typeof SLOT_LIMITS] || 4;
-
-      // Prevent selection if limit reached (player will be disabled, so this is backup)
-      if (currentSlotCount >= slotLimit) {
-        return prev;
-      }
-
-      // Allow selection
-      return [...prev, playerId];
-    });
-  };
-
-  const handleSetCaptain = (playerId: string) => {
-    setCaptainId(playerId);
-    if (viceCaptainId === playerId) {
-      setViceCaptainId("");
-    }
-  };
-
-  const handleSetViceCaptain = (playerId: string) => {
-    setViceCaptainId(playerId);
-    if (captainId === playerId) {
-      setCaptainId("");
-    }
-  };
+  // All selection handlers provided by hook
 
   // Handle team submission
   const handleSubmitTeam = async () => {
@@ -322,16 +191,17 @@ export default function MyTeamPage() {
                 <div className="space-y-3">
                   {/* Slot badges in a grid */}
                   <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
-                    {SLOT_SEQUENCE.map((slot) => {
-                      const count = selectedCountBySlot[slot] || 0;
+                    {slots.map((s) => {
+                      const count = selectedCountBySlot[s.id] || 0;
+                      const limit = SLOT_LIMITS[s.id] || 4;
                       return (
                         <Badge
-                          key={slot}
-                          variant={count >= 4 ? "success" : "secondary"}
+                          key={s.id}
+                          variant={count >= limit ? "success" : "secondary"}
                           size="sm"
                           className="justify-center"
                         >
-                          Slot {slot}: {count}/4
+                          {s.name}: {count}/{limit}
                         </Badge>
                       );
                     })}
@@ -374,19 +244,19 @@ export default function MyTeamPage() {
 
                 {/* Slot Filter Tabs */}
                 <div className="flex overflow-x-auto gap-2 mb-3 sm:mb-4 pb-2 -mx-2 px-2 scrollbar-hide">
-                  {SLOT_SEQUENCE.map((slot) => {
-                    const limit = SLOT_LIMITS[slot as keyof typeof SLOT_LIMITS];
-                    const count = selectedCountBySlot[slot] || 0;
-                    const isActive = activeSlot === slot;
+                  {slots.map((s) => {
+                    const limit = SLOT_LIMITS[s.id];
+                    const count = selectedCountBySlot[s.id] || 0;
+                    const isActive = activeSlotId === s.id;
                     return (
                       <Button
-                        key={slot}
+                        key={s.id}
                         variant={isActive ? "primary" : "ghost"}
                         size="sm"
-                        onClick={() => setActiveSlot(slot)}
+                        onClick={() => setActiveSlotId(s.id)}
                         className="rounded-full flex-shrink-0"
                       >
-                        {`Slot ${slot}`}
+                        {s.name}
                         {limit !== undefined && (
                           <span
                             className={`ml-2 text-xs ${isActive ? "text-white/90" : "text-gray-600"}`}
@@ -408,11 +278,11 @@ export default function MyTeamPage() {
                   <div className="text-center text-red-600 py-6">{error}</div>
                 ) : (
                   <PlayerList
-                    players={players as unknown as Player[]}
+                    players={players.filter((p) => p.slotId === activeSlotId) as unknown as Player[]}
                     selectedPlayers={selectedPlayers}
                     onPlayerSelect={handlePlayerSelect}
                     maxSelections={16}
-                    filterSlot={activeSlot}
+                    /* filtering handled above using slotId */
                     sortByRole={true}
                     onBlockedSelect={(reason) => alert(reason)}
                     compact={true}
@@ -424,21 +294,20 @@ export default function MyTeamPage() {
                         return false;
                       }
                       // Check if the player's slot has reached its limit
-                      const playerSlot = (player as any).slot;
+                      const playerSlotId = (players.find((p) => p.id === player.id) as any)?.slotId as string | undefined;
+                      if (!playerSlotId) return false;
                       const currentSlotCount = selectedPlayers.filter((id) => {
-                        const p = players.find((mp) => mp.id === id);
-                        return (p as any)?.slot === playerSlot;
+                        const p = players.find((mp) => mp.id === id) as any;
+                        return p?.slotId === playerSlotId;
                       }).length;
-                      const slotLimit =
-                        SLOT_LIMITS[playerSlot as keyof typeof SLOT_LIMITS] ||
-                        4;
+                      const slotLimit = SLOT_LIMITS[playerSlotId] || 4;
                       return currentSlotCount >= slotLimit;
                     }}
                   />
                 )}
 
                 {/* Bottom actions: Previous + (Next or Continue) centered */}
-                {activeSlot === SLOT_SEQUENCE[SLOT_SEQUENCE.length - 1] ? (
+                {slots.findIndex((s) => s.id === activeSlotId) === slots.length - 1 ? (
                   <div className="flex items-center justify-center mt-6">
                     <div className="flex gap-3 w-full sm:w-auto">
                       <Button
@@ -459,9 +328,7 @@ export default function MyTeamPage() {
                           // Scroll to top of page smoothly
                           window.scrollTo({ top: 0, behavior: "smooth" });
                         }}
-                        disabled={
-                          !((selectedCountBySlot[activeSlot] || 0) >= 1)
-                        }
+                        disabled={!canNextForActiveSlot}
                         className="flex-1 sm:flex-none"
                       >
                         Continue
@@ -511,7 +378,7 @@ export default function MyTeamPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {players
                         .filter((player) => selectedPlayers.includes(player.id))
-                        .map((player: Player & { slot: number }) => (
+                        .map((player: Player) => (
                           <PlayerCard
                             key={player.id}
                             player={player}
@@ -628,24 +495,20 @@ export default function MyTeamPage() {
                       </div>
 
                       <div
-                        className={`${players.filter((p) => selectedPlayers.includes(p.id)).reduce((sum: number, p: Player & { slot: number }) => sum + p.price, 0) > 0 ? "bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200" : "bg-gray-50 border-gray-200"} rounded-xl p-4 border`}
+                        className={`${players.filter((p) => selectedPlayers.includes(p.id)).reduce((sum: number, p: any) => sum + (p.price || 0), 0) > 0 ? "bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200" : "bg-gray-50 border-gray-200"} rounded-xl p-4 border`}
                       >
                         <div
-                          className={`text-2xl font-bold mb-1 ${players.filter((p) => selectedPlayers.includes(p.id)).reduce((sum: number, p: Player & { slot: number }) => sum + p.price, 0) > 0 ? "text-primary-700" : "text-gray-700"}`}
+                          className={`text-2xl font-bold mb-1 ${players.filter((p) => selectedPlayers.includes(p.id)).reduce((sum: number, p: any) => sum + (p.price || 0), 0) > 0 ? "text-primary-700" : "text-gray-700"}`}
                         >
                           ₹
                           {Math.floor(
                             players
                               .filter((p) => selectedPlayers.includes(p.id))
-                              .reduce(
-                                (sum: number, p: Player & { slot: number }) =>
-                                  sum + p.price,
-                                0
-                              )
+                              .reduce((sum: number, p: any) => sum + (p.price || 0), 0)
                           )}
                         </div>
                         <div
-                          className={`text-sm ${players.filter((p) => selectedPlayers.includes(p.id)).reduce((sum: number, p: Player & { slot: number }) => sum + p.price, 0) > 0 ? "text-primary-600" : "text-gray-500"}`}
+                          className={`text-sm ${players.filter((p) => selectedPlayers.includes(p.id)).reduce((sum: number, p: any) => sum + (p.price || 0), 0) > 0 ? "text-primary-600" : "text-gray-500"}`}
                         >
                           Team Value
                         </div>
@@ -662,7 +525,7 @@ export default function MyTeamPage() {
                           .filter((player) =>
                             selectedPlayers.includes(player.id)
                           )
-                          .map((player: Player & { slot: number }) => (
+                          .map((player: Player) => (
                             <div
                               key={player.id}
                               className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
