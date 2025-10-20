@@ -1,84 +1,128 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import { publicContestsApi, Contest, LeaderboardEntry } from '@/lib/api/public/contests';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { BarChart3, User, Trophy, Crown } from "lucide-react";
+import { publicContestsApi, Contest, type EnrollmentResponse } from "@/lib/api/public/contests";
 
 export default function ContestDetailsPage() {
+  const { isAuthenticated } = useAuth();
   const params = useParams<{ contestId: string }>();
+  const router = useRouter();
   const contestId = params?.contestId as string;
   const [contest, setContest] = useState<Contest | null>(null);
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isJoined, setIsJoined] = useState(false);
 
   useEffect(() => {
     if (!contestId) return;
     (async () => {
       try {
         setLoading(true);
-        const [c, lb] = await Promise.all([
-          publicContestsApi.get(contestId),
-          publicContestsApi.leaderboard(contestId, { limit: 100 }),
-        ]);
+        const c = await publicContestsApi.get(contestId);
         setContest(c);
-        setEntries(lb.entries);
       } catch (e: any) {
-        setError(e?.message || 'Failed to load contest');
+        setError(e?.message || "Failed to load contest");
       } finally {
         setLoading(false);
       }
     })();
   }, [contestId]);
 
+  // Check if user has already enrolled in this contest
+  useEffect(() => {
+    (async () => {
+      try {
+        const mine: EnrollmentResponse[] = await publicContestsApi.myEnrollments();
+        setIsJoined(mine.some((e) => e.contest_id === contestId));
+      } catch {
+        // ignore unauthenticated or unavailable
+      }
+    })();
+  }, [contestId]);
+
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Contest</h1>
-        <Link className="text-blue-600 hover:underline" href="/contests">Back to Contests</Link>
-      </div>
+    <div className="max-w-7xl mx-auto p-4">
       {loading && <div>Loading...</div>}
       {error && <div className="text-red-600">{error}</div>}
       {contest && (
-        <div className="border rounded p-4 mb-6">
-          <div className="text-xl font-medium">{contest.name}</div>
-          <div className="text-sm text-gray-600">Code: {contest.code}</div>
-          {contest.description && <p className="mt-2 text-gray-700">{contest.description}</p>}
-          <div className="text-sm text-gray-700 mt-2">
-            {new Date(contest.start_at).toLocaleString()} – {new Date(contest.end_at).toLocaleString()}
+        <>
+          {/* Header: subtle badge + big gradient title */}
+          <div className="text-center mb-10 -mt-12">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-primary text-white text-xs font-semibold shadow-sm mb-4">
+              <Trophy className="w-4 h-4" />
+              <span>Live Contest</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-white/90" />
+            </div>
+            <div className="relative inline-block mb-2">
+              <Crown className="w-8 h-8 text-primary-500/70 absolute -top-4 -left-6 hidden sm:block" />
+              <Crown className="w-8 h-8 text-primary-500/70 absolute -top-4 -right-6 hidden sm:block" />
+              <div className="text-4xl sm:text-6xl font-black tracking-tight bg-gradient-to-r from-primary-300 to-primary-700 bg-clip-text text-transparent px-4">
+                Contest
+              </div>
+            </div>
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-primary-700">
+              {contest.name}
+            </h1>
           </div>
-        </div>
-      )}
 
-      <h2 className="text-xl font-semibold mb-2">Leaderboard</h2>
-      <div className="overflow-x-auto">
-        <table className="min-w-full border">
-          <thead>
-            <tr className="bg-gray-50 text-left">
-              <th className="p-2 border">Rank</th>
-              <th className="p-2 border">User</th>
-              <th className="p-2 border">Team</th>
-              <th className="p-2 border">Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e) => (
-              <tr key={`${e.rank}-${e.username}`} className="hover:bg-gray-50">
-                <td className="p-2 border">{e.rank}</td>
-                <td className="p-2 border">{e.displayName}</td>
-                <td className="p-2 border">{e.teamName}</td>
-                <td className="p-2 border">{e.points.toFixed(2)}</td>
-              </tr>
-            ))}
-            {entries.length === 0 && (
-              <tr>
-                <td className="p-2 border text-gray-600" colSpan={4}>No entries yet.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          {/* Action cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-stretch">
+            {/* Leaderboard side */}
+            <button
+              onClick={() => router.push(`/contests/${contest.id}/leaderboard`)}
+              className="group w-full h-full rounded-3xl overflow-hidden p-[2px] bg-gradient-primary shadow-lg transition transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-primary/40"
+            >
+              <div className="h-full w-full rounded-3xl bg-gradient-primary">
+                <div className="p-8 sm:p-10 lg:p-14 text-white flex flex-col items-center justify-center text-center min-h-[320px] sm:min-h-[360px] lg:min-h-[380px] h-full">
+                  <div className="mb-6 p-4 rounded-2xl bg-white/20 backdrop-blur-sm">
+                    <BarChart3 className="w-16 h-16 text-white" />
+                  </div>
+                  <h2 className="text-4xl sm:text-5xl font-black tracking-tight drop-shadow">
+                    Leaderboard
+                  </h2>
+                  <p className="mt-3 text-white/90 text-sm sm:text-base">
+                    See how you rank against the best
+                  </p>
+                  <div className="mt-8 inline-flex items-center px-8 py-3 rounded-full bg-white/20 hover:bg-white/30 text-white text-sm font-semibold transition">
+                    View Rankings
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            {/* Make/View team side */}
+            <button
+              onClick={() => {
+                const target = `/contests/${contest.id}/team`;
+                if (!isAuthenticated) {
+                  router.push(`/auth/login?next=${encodeURIComponent(target)}`);
+                } else {
+                  router.push(target);
+                }
+              }}
+              className="w-full h-full rounded-3xl bg-gradient-to-br from-white via-white to-primary-50 shadow-lg hover:shadow-xl p-8 sm:p-10 lg:p-14 text-center flex items-center justify-center transition transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-primary/20"
+            >
+              <div className="flex flex-col items-center justify-center min-h-[320px] sm:min-h-[360px] lg:min-h-[380px]">
+                <div className="mb-6 p-4 rounded-2xl bg-primary-50 inline-flex">
+                  <User className="w-16 h-16 text-primary-600" />
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-primary-700">
+                  {isJoined ? "View Team" : "Make Team"}
+                </h2>
+                <p className="mt-3 text-primary-700/80 text-sm sm:text-base">
+                  {isJoined ? "Open your registered team" : "Assemble your squad and compete together"}
+                </p>
+                <div className="mt-8 inline-flex items-center px-8 py-3 rounded-full bg-gradient-primary text-white text-sm font-semibold shadow transition">
+                  {isJoined ? "Go to Team" : "Start Building"}
+                </div>
+              </div>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

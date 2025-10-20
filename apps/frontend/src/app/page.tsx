@@ -116,10 +116,10 @@ export default function HomePage() {
                   <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start items-center">
                     {isAuthenticated ? (
                       <Link
-                        href="/myteam"
+                        href="/contests"
                         className="inline-flex items-center px-10 py-4 rounded-full text-lg font-semibold text-white bg-gradient-primary shadow-lg hover:shadow-[0_0_20px_rgba(191,171,121,0.5)] transition-all duration-300 group"
                       >
-                        Make Your Team Now
+                        Explore Contests
                         <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
                       </Link>
                     ) : (
@@ -206,11 +206,17 @@ export default function HomePage() {
                       </div>
                       <div className="mt-4 flex items-center gap-2">
                         {!joinedContestIds.has(c.id) ? (
-                          <Link href="/teams" className="inline-flex justify-center items-center px-4 py-2 rounded-lg bg-gradient-primary text-white text-sm font-medium shadow hover:opacity-95">
-                            Join Contest
-                          </Link>
+                          isAuthenticated ? (
+                            <Link href={`/contests/${c.id}`} className="inline-flex justify-center items-center px-4 py-2 rounded-lg bg-gradient-primary text-white text-sm font-medium shadow hover:opacity-95">
+                              Join Contest
+                            </Link>
+                          ) : (
+                            <Link href={`/auth/login?next=${encodeURIComponent(`/contests/${c.id}/team`)}`} className="inline-flex justify-center items-center px-4 py-2 rounded-lg bg-gradient-primary text-white text-sm font-medium shadow hover:opacity-95">
+                              Join Contest
+                            </Link>
+                          )
                         ) : (
-                          <Link href={`/leaderboard/${c.id}`} className="inline-flex justify-center items-center px-4 py-2 rounded-lg border text-sm font-medium text-primary-700 border-primary-200 hover:bg-primary-50">
+                          <Link href={`/contests/${c.id}/leaderboard`} className="inline-flex justify-center items-center px-4 py-2 rounded-lg border text-sm font-medium text-primary-700 border-primary-200 hover:bg-primary-50">
                             View Leaderboard
                           </Link>
                         )}

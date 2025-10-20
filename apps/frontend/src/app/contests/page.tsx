@@ -1,51 +1,123 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { publicContestsApi, Contest } from '@/lib/api/public/contests';
+import { useEffect, useState } from "react";
+import { Trophy } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { publicContestsApi, Contest, type EnrollmentResponse } from "@/lib/api/public/contests";
+import { PillNavbar } from "@/components/navigation/PillNavbar";
+import { MobileUserMenu } from "@/components/navigation/MobileUserMenu";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ContestsPage() {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
   const [contests, setContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [joinedContestIds, setJoinedContestIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
-        const res = await publicContestsApi.list({ status: 'active', page_size: 50 });
+        const res = await publicContestsApi.list({
+          status: "active",
+          page_size: 50,
+        });
         setContests(res.contests);
       } catch (e: any) {
-        setError(e?.message || 'Failed to load contests');
+        setError(e?.message || "Failed to load contests");
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
+  // Load user's contest enrollments to toggle Join/View Team
+  useEffect(() => {
+    (async () => {
+      try {
+        const mine: EnrollmentResponse[] = await publicContestsApi.myEnrollments();
+        setJoinedContestIds(new Set(mine.map((e) => e.contest_id)));
+      } catch {
+        // ignore unauthenticated or unavailable endpoint
+      }
+    })();
+  }, []);
+
+  const handleJoin = (contestId: string) => {
+    if (!isAuthenticated) {
+      router.push(
+        `/auth/login?next=${encodeURIComponent(`/contests/${contestId}/team`)}`
+      );
+      return;
+    }
+    router.push(`/contests/${contestId}`);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-semibold mb-4">Active Contests</h1>
-      {loading && <div>Loading...</div>}
-      {error && <div className="text-red-600">{error}</div>}
-      <div className="grid gap-4">
-        {contests.map((c) => (
-          <Link key={c.id} href={`/contests/${c.id}`} className="block border rounded p-4 hover:bg-gray-50">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-lg font-medium">{c.name}</div>
-                <div className="text-sm text-gray-600">Code: {c.code}</div>
-              </div>
-              <div className="text-sm text-gray-700">
-                {new Date(c.start_at).toLocaleString()} – {new Date(c.end_at).toLocaleString()}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50 to-gray-50">
+      <PillNavbar
+        activeId="contests"
+        mobileMenuContent={isAuthenticated ? <MobileUserMenu /> : undefined}
+      />
+      <div className="h-20" />
+
+      <div className="max-w-4xl mx-auto p-4">
+        <h1 className="flex items-center justify-center gap-3 text-3xl font-extrabold mb-8 text-center bg-gradient-to-r from-primary-400 to-primary-700 bg-clip-text text-transparent">
+          <Trophy className="w-7 h-7 text-primary-600" />
+          <span>Active Contests</span>
+        </h1>
+        {loading && <div>Loading...</div>}
+        {error && <div className="text-red-600">{error}</div>}
+        <div className="grid gap-5 place-items-center">
+          {contests.map((c) => (
+            <div key={c.id} className="w-full">
+              <div className="rounded-3xl bg-white/90 backdrop-blur shadow-md px-6 sm:px-8 py-6 min-h-[120px]">
+                <div className="flex items-center justify-between gap-6">
+                  <div className="min-w-0">
+                    <button
+                      onClick={() => handleJoin(c.id)}
+                      className="text-2xl font-bold text-gray-900 hover:underline truncate block text-left"
+                    >
+                      {c.name}
+                    </button>
+                    <div className="text-sm text-gray-600">Code: {c.code}</div>
+                    {c.description && (
+                      <p className="mt-2 text-gray-700 text-sm line-clamp-2">
+                        {c.description}
+                      </p>
+                    )}
+                    <div className="text-xs text-gray-500 mt-1">
+                      {new Date(c.start_at).toLocaleString()} –{" "}
+                      {new Date(c.end_at).toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2 flex-shrink-0 self-center">
+                    {joinedContestIds.has(c.id) ? (
+                      <button
+                        onClick={() => router.push(`/contests/${c.id}/team`)}
+                        className="px-6 py-3 rounded-xl border text-base font-semibold text-primary-700 border-primary-200 hover:bg-primary-50"
+                      >
+                        View Team
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleJoin(c.id)}
+                        className="px-6 py-3 rounded-xl bg-gradient-primary text-white text-base font-semibold shadow hover:opacity-95"
+                      >
+                        Join
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-            {c.description && <p className="mt-2 text-gray-700 text-sm">{c.description}</p>}
-          </Link>
-        ))}
-        {!loading && contests.length === 0 && (
-          <div className="text-gray-600">No active contests.</div>
-        )}
+          ))}
+          {!loading && contests.length === 0 && (
+            <div className="text-gray-600">No active contests.</div>
+          )}
+        </div>
       </div>
     </div>
   );

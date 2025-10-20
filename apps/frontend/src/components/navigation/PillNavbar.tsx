@@ -36,16 +36,16 @@ interface PillNavbarProps {
 const DEFAULT_ITEMS: PillNavItem[] = [
   { id: "home", label: "Home", href: "/", icon: <Home className="w-4 h-4" /> },
   {
+    id: "contests",
+    label: "Contests",
+    href: "/contests",
+    icon: <Trophy className="w-4 h-4" />,
+  },
+  {
     id: "leaderboard",
     label: "Leaderboard",
     href: "/leaderboard",
     icon: <Trophy className="w-4 h-4" />,
-  },
-  {
-    id: "my-team",
-    label: "My Team",
-    href: "/teams",
-    icon: <Users className="w-4 h-4" />,
   },
   {
     id: "sponsors",
@@ -252,7 +252,7 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
         <div className="md:hidden bg-[#f9f7f3] rounded-2xl shadow-md border border-gray-200">
           <div className="flex items-center justify-between p-3">
             {/* Logo */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 -ml-1">
               <Image
                 src="/logo.jpeg"
                 alt="Wall-E Arena Logo"
@@ -297,7 +297,7 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
       >
         {/* Menu Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 -ml-1">
             <Image
               src="/logo.jpeg"
               alt="Wall-E Arena Logo"

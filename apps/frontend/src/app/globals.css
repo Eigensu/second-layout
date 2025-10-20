@@ -40,11 +40,9 @@
   /* Custom Properties for Dynamic Theming */
   --primary-gradient: linear-gradient(135deg, #bfab79 0%, #a89363 100%);
   --secondary-gradient: linear-gradient(135deg, #d9cba3 0%, #bfab79 100%);
-  --glass-bg: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
+  --glass-bg: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.05) 100%);
 
   /* Animation Variables */
   --transition-fast: 150ms ease-out;
@@ -86,6 +84,7 @@ body {
 
 /* Custom Component Styles */
 @layer components {
+
   /* Glass Morphism Effect */
   .glass {
     background: var(--glass-bg);
@@ -147,10 +146,12 @@ body {
   }
 
   @keyframes float {
+
     0%,
     100% {
       transform: translateY(0px);
     }
+
     50% {
       transform: translateY(-10px);
     }
@@ -162,10 +163,12 @@ body {
   }
 
   @keyframes pulse-glow {
+
     0%,
     100% {
       box-shadow: 0 0 20px rgba(191, 171, 121, 0.3);
     }
+
     50% {
       box-shadow: 0 0 40px rgba(191, 171, 121, 0.6);
     }
@@ -174,6 +177,7 @@ body {
 
 /* Utility Classes */
 @layer utilities {
+
   /* Text Selection */
   ::selection {
     background-color: #bfab79;
@@ -235,6 +239,7 @@ body {
   0% {
     background-position: -200px 0;
   }
+
   100% {
     background-position: calc(200px + 100%) 0;
   }
@@ -261,6 +266,7 @@ body {
 
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -276,9 +282,11 @@ body {
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -290,11 +298,13 @@ body {
 }
 
 @keyframes pulse-slow {
+
   0%,
   100% {
     transform: scale(1);
     box-shadow: 0 0 0 rgba(255, 255, 255, 0);
   }
+
   50% {
     transform: scale(1.05);
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
@@ -307,10 +317,13 @@ body {
 
 /* Hide scrollbar but keep functionality */
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+  display: none;
+  /* Chrome, Safari and Opera */
 }

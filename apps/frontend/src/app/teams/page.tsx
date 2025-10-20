@@ -333,7 +333,7 @@ export default function TeamsPage() {
   };
 
   const handleCreateNewTeam = () => {
-    router.push("/myteam");
+    router.push("/contests");
   };
 
   if (loading) {
@@ -413,7 +413,7 @@ export default function TeamsPage() {
                   + Create New Team
                 </Button>
                 {joinedContest && (
-                  <Link href={`/leaderboard/${joinedContest.id}`} className="inline-flex">
+                  <Link href={`/contests/${joinedContest.id}/leaderboard`} className="inline-flex">
                     <Badge variant="success" className="whitespace-nowrap">
                       Contest: {joinedContest.name}
                     </Badge>
@@ -551,7 +551,7 @@ export default function TeamsPage() {
                           </Badge>
                         )}
                         {enrollmentByTeam[team.id] && (
-                          <Link href={`/leaderboard/${enrollmentByTeam[team.id].contestId}`} className="inline-flex">
+                          <Link href={`/contests/${enrollmentByTeam[team.id].contestId}/leaderboard`} className="inline-flex">
                             <Badge variant="success" className="text-xs sm:text-sm">
                               Contest: {enrollmentByTeam[team.id].contestName}
                             </Badge>
