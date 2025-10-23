@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
@@ -59,6 +61,8 @@ app.include_router(admin_users_teams_router)
 app.include_router(players_router)
 app.include_router(slots_router)
 app.include_router(teams_router)
+
+# Files are served via API streaming endpoints (GridFS); no static uploads mount required
 
 @app.get("/")
 async def root():

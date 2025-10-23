@@ -19,6 +19,7 @@ export interface RegisterCredentials {
   email: string;
   password: string;
   full_name?: string;
+  avatar?: File | null;
 }
 
 export interface AuthTokens {

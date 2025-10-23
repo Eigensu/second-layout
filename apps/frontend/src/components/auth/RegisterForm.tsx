@@ -43,6 +43,7 @@ export function RegisterForm() {
   const { register: registerUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [avatar, setAvatar] = useState<File | null>(null);
 
   const {
     register,
@@ -58,7 +59,7 @@ export function RegisterForm() {
       setError(null);
 
       const { confirmPassword, ...registerData } = data;
-      await registerUser(registerData);
+      await registerUser({ ...registerData, avatar });
       // No need to redirect here - AuthContext handles it
     } catch (err) {
       const errorMessage =
@@ -122,6 +123,21 @@ export function RegisterForm() {
             variant="light"
             className="rounded-2xl"
           />
+
+          {/* Avatar upload */}
+          <div>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              disabled={isLoading}
+              className="w-full rounded-2xl border border-gray-200 bg-white py-3.5 px-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                setAvatar(file);
+              }}
+            />
+            <p className="mt-1.5 text-xs text-gray-500">Optional. Max 5MB. PNG, JPG, WEBP, SVG.</p>
+          </div>
 
           {/* Full name field removed as requested */}
 

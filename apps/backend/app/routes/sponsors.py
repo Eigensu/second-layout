@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query, Response
 from typing import Optional
 from datetime import datetime
 
@@ -13,7 +13,11 @@ from app.schemas.sponsor import (
     UploadResponse
 )
 from app.utils.dependencies import get_current_active_user
-from app.utils.file_upload import save_upload_file, delete_upload_file
+from app.utils.gridfs import (
+    upload_sponsor_logo_to_gridfs,
+    open_sponsor_logo_stream,
+    delete_sponsor_logo_from_gridfs,
+)
 
 router = APIRouter(prefix="/api/v1/sponsors", tags=["sponsors"])
 
@@ -190,9 +194,9 @@ async def delete_sponsor(
             detail="Sponsor not found"
         )
     
-    # Try to delete logo file if it exists
-    if sponsor.logo:
-        delete_upload_file(sponsor.logo)
+    # Try to delete logo from GridFS if it exists
+    if sponsor.logo_file_id:
+        await delete_sponsor_logo_from_gridfs(sponsor.logo_file_id)
     
     await sponsor.delete()
     return None
@@ -221,23 +225,20 @@ async def upload_sponsor_logo(
             detail="Sponsor not found"
         )
     
-    # Delete old logo if it exists
-    if sponsor.logo:
-        delete_upload_file(sponsor.logo)
+    # Delete old logo if it exists in GridFS
+    if sponsor.logo_file_id:
+        await delete_sponsor_logo_from_gridfs(sponsor.logo_file_id)
     
-    # Save new logo
+    # Save new logo to GridFS
     try:
-        file_path = await save_upload_file(file, sponsor_id)
-        
-        # Update sponsor with new logo path
-        sponsor.logo = file_path
+        file_id = await upload_sponsor_logo_to_gridfs(file, filename_prefix=f"sponsor_{sponsor_id}")
+        # Update sponsor with API URL and file id
+        sponsor.logo_file_id = file_id
+        sponsor.logo = f"/api/v1/sponsors/{sponsor_id}/logo"
         sponsor.updated_at = datetime.utcnow()
         await sponsor.save()
-        
-        # In production, this should be a full URL
-        # For now, return relative path (frontend will construct full URL)
         return UploadResponse(
-            url=file_path,
+            url=sponsor.logo,
             message="Logo uploaded successfully"
         )
     except HTTPException:
@@ -247,6 +248,16 @@ async def upload_sponsor_logo(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to upload logo: {str(e)}"
         )
+
+
+@router.get("/{sponsor_id}/logo")
+async def get_sponsor_logo(sponsor_id: str):
+    sponsor = await Sponsor.get(sponsor_id)
+    if not sponsor or not sponsor.logo_file_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Logo not found")
+    stream, content_type = await open_sponsor_logo_stream(sponsor.logo_file_id)
+    data = await stream.read()
+    return Response(content=data, media_type=content_type)
 
 
 # Additional utility endpoints

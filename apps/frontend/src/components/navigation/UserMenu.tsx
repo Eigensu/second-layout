@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { LayoutDashboard, Settings, LogOut, ChevronDown } from "lucide-react";
+import { Avatar } from "@/components/ui/Avatar";
 
 function UserMenuComp() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -30,9 +31,7 @@ function UserMenuComp() {
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white text-sm shadow">
-          U
-        </div>
+        <Avatar name={user?.username || "User"} src={user?.avatar_url || undefined} size="sm" className="h-7 w-7" />
         <span className="hidden sm:inline text-gray-700">Account</span>
         <ChevronDown
           className={`h-4 w-4 text-gray-500 transition-transform ${open ? "rotate-180" : ""}`}

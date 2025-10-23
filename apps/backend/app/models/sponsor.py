@@ -18,10 +18,14 @@ class Sponsor(Document):
 
     name: Indexed(str, unique=True)  # type: ignore
     tier: SponsorTier
-    logo_url: HttpUrl
-    website_url: Optional[HttpUrl] = None
+    # Public URL to logo served via API; will be '/api/v1/sponsors/{id}/logo'
+    logo: Optional[str] = None
+    # GridFS file id for the stored logo
+    logo_file_id: Optional[str] = None
+    website: Optional[HttpUrl] = None
     description: Optional[str] = None
-    is_active: bool = True
+    featured: bool = False
+    active: bool = True
     display_order: int = 0  # For controlling display order on frontend
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

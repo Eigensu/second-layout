@@ -6,7 +6,19 @@ export const authApi = {
    * Register a new user
    */
   register: async (credentials: RegisterCredentials): Promise<AuthTokens> => {
-    const response = await apiClient.post<AuthTokens>('/api/auth/register', credentials);
+    // Always use FormData to match backend Form(...) params
+    const form = new FormData();
+    form.append('username', credentials.username);
+    form.append('email', credentials.email);
+    form.append('password', credentials.password);
+    if (credentials.full_name) form.append('full_name', credentials.full_name);
+    if (credentials.avatar) form.append('avatar', credentials.avatar);
+
+    const response = await apiClient.post<AuthTokens>(
+      '/api/auth/register',
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
     return response.data;
   },
 

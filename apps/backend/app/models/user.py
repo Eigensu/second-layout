@@ -18,6 +18,7 @@ class User(Document):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     last_login: Optional[datetime] = None
     avatar_url: Optional[str] = None
+    avatar_file_id: Optional[str] = None  # GridFS file id for avatar
 
     class Settings:
         name = "users"  # MongoDB collection name

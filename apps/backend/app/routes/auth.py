@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from datetime import datetime, timedelta
 
 from app.models.user import User, RefreshToken
@@ -12,14 +12,30 @@ from app.utils.security import (
     decode_token
 )
 from config.settings import get_settings
+from pydantic import EmailStr, ValidationError
+from typing import Optional
+from app.utils.gridfs import upload_avatar_to_gridfs
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 settings = get_settings()
 
 
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserRegister):
+async def register(
+    username: str = Form(...),
+    email: EmailStr = Form(...),
+    password: str = Form(...),
+    full_name: Optional[str] = Form(None),
+    avatar: Optional[UploadFile] = File(None),
+):
     """Register a new user"""
+
+    # Validate fields with existing schema
+    try:
+        user_data = UserRegister(username=username, email=email, password=password, full_name=full_name)
+    except ValidationError as e:
+        # Match FastAPI validation error format
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors())
 
     # Check if username exists
     existing_user = await User.find_one(User.username == user_data.username.lower())
@@ -50,6 +66,14 @@ async def register(user_data: UserRegister):
 
     # Save to MongoDB
     await new_user.insert()
+
+    # If avatar uploaded, save to GridFS and update user
+    if avatar is not None:
+        file_id = await upload_avatar_to_gridfs(avatar, filename_prefix=f"user_{new_user.id}")
+        new_user.avatar_file_id = file_id
+        # Provide a stable API URL for the avatar
+        new_user.avatar_url = f"/api/users/{new_user.id}/avatar"
+        await new_user.save()
 
     # Generate tokens
     access_token = create_access_token(data={"sub": new_user.username})

@@ -1,5 +1,6 @@
 import * as React from "react";
 import Image from "next/image";
+import { API_BASE_URL } from "@/common/consts";
 
 interface AvatarProps {
   name: string;
@@ -17,6 +18,7 @@ const Avatar: React.FC<AvatarProps> = ({
   className = "",
   gradientClassName,
 }) => {
+  const [errored, setErrored] = React.useState(false);
   const getInitials = (name: string): string => {
     return name
       .split(" ")
@@ -54,12 +56,23 @@ const Avatar: React.FC<AvatarProps> = ({
   const baseClasses =
     "rounded-full flex items-center justify-center text-white font-bold";
 
-  if (src) {
+  // Build absolute src if backend returned a relative API path
+  const resolvedSrc = src && src.startsWith("/api") ? `${API_BASE_URL}${src}` : src;
+
+  if (resolvedSrc && !errored) {
     return (
       <div
         className={`${baseClasses} ${sizeClasses[size]} ${className} relative overflow-hidden`}
       >
-        <Image src={src} alt={name} fill className="object-cover" />
+        <Image
+          src={resolvedSrc}
+          alt={name}
+          fill
+          className="object-cover object-center"
+          unoptimized
+          onError={() => setErrored(true)}
+          priority
+        />
       </div>
     );
   }

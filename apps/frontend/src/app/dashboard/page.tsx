@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { LogOut, User, Mail, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "@/common/consts";
 
 export default function DashboardPage() {
   return (
@@ -82,6 +83,34 @@ function DashboardContent() {
           </h3>
 
           <div className="space-y-4">
+            {/* Avatar section */}
+            <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+              <div className="relative h-16 w-16 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center text-lg font-semibold text-gray-600">
+                {user?.avatar_url ? (
+                  (() => {
+                    const src = user.avatar_url.startsWith("/api")
+                      ? `${API_BASE_URL}${user.avatar_url}`
+                      : user.avatar_url;
+                    return (
+                      <img
+                        src={src}
+                        alt={user?.username || "avatar"}
+                        className="h-16 w-16 object-cover object-center"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    );
+                  })()
+                ) : (
+                  <span>{(user?.username?.[0] || "U").toUpperCase()}</span>
+                )}
+              </div>
+              <div>
+                <div className="text-base font-semibold text-gray-900">{user?.full_name || user?.username}</div>
+                <div className="text-sm text-gray-500">{user?.email}</div>
+              </div>
+            </div>
             <div className="flex items-start">
               <div className="flex-shrink-0">
                 <User className="w-5 h-5 text-gray-400 mt-1" />

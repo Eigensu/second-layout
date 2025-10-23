@@ -18,6 +18,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { Avatar } from "@/components/ui/Avatar";
 
 export interface PillNavItem {
   id: string;
@@ -72,7 +73,7 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const userMenuRef = React.useRef<HTMLDivElement>(null);
 
   const visibleItems = React.useMemo(() => {
@@ -189,9 +190,7 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
                   aria-haspopup="menu"
                   aria-expanded={userMenuOpen}
                 >
-                  <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gradient-primary text-white text-sm shadow">
-                    U
-                  </div>
+                  <Avatar name={user?.username || "User"} src={user?.avatar_url || undefined} size="sm" className="h-7 w-7" />
                   <span className="text-gray-700">Account</span>
                   <ChevronDown
                     className={`h-4 w-4 text-gray-500 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}

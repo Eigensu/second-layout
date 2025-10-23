@@ -15,9 +15,13 @@ ALLOWED_MIME_TYPES = {
 }
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
-# Upload directory
-UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "uploads" / "sponsors"
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+# Upload directories
+BASE_UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "uploads"
+SPONSOR_UPLOAD_DIR = BASE_UPLOAD_DIR / "sponsors"
+USER_UPLOAD_DIR = BASE_UPLOAD_DIR / "users"
+
+SPONSOR_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+USER_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def validate_image_file(file: UploadFile) -> None:
@@ -55,7 +59,7 @@ async def save_upload_file(file: UploadFile, sponsor_id: str) -> str:
     # Generate unique filename
     file_ext = Path(file.filename).suffix.lower()
     unique_filename = f"{sponsor_id}_{uuid.uuid4().hex}{file_ext}"
-    file_path = UPLOAD_DIR / unique_filename
+    file_path = SPONSOR_UPLOAD_DIR / unique_filename
     
     # Check file size
     file.file.seek(0, 2)  # Seek to end
@@ -80,6 +84,46 @@ async def save_upload_file(file: UploadFile, sponsor_id: str) -> str:
     
     # Return relative path (can be converted to URL in the route)
     return f"/uploads/sponsors/{unique_filename}"
+
+
+async def save_user_avatar(file: UploadFile, user_id: str) -> str:
+    """
+    Save uploaded user avatar to local storage
+
+    Args:
+        file: The uploaded file
+        user_id: ID of the user
+
+    Returns:
+        str: Relative URL to the saved avatar
+    """
+    validate_image_file(file)
+
+    file_ext = Path(file.filename).suffix.lower()
+    unique_filename = f"{user_id}_{uuid.uuid4().hex}{file_ext}"
+    file_path = USER_UPLOAD_DIR / unique_filename
+
+    # Check file size
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
+
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File too large. Maximum size: {MAX_FILE_SIZE / 1024 / 1024}MB"
+        )
+
+    try:
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save file: {str(e)}"
+        )
+
+    return f"/uploads/users/{unique_filename}"
 
 
 def delete_upload_file(file_path: str) -> bool:
