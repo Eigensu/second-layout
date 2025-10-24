@@ -1,8 +1,8 @@
 from beanie import Document, Indexed
 from pydantic import Field
 from datetime import datetime
-from typing import Optional
-from app.common.enums.contests import ContestStatus, ContestVisibility, PointsScope
+from typing import Optional, List
+from app.common.enums.contests import ContestStatus, ContestVisibility, PointsScope, ContestType
 
 
 class Contest(Document):
@@ -27,6 +27,11 @@ class Contest(Document):
     # points calculation mode (phase 1 uses baseline; ledger can come later)
     points_scope: PointsScope = PointsScope.TIME_WINDOW
 
+    # type of contest: daily or full tournament
+    contest_type: ContestType = ContestType.FULL
+    # list of allowed real-world team names (Player.team) for daily contests
+    allowed_teams: List[str] = Field(default_factory=list)
+
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -37,4 +42,5 @@ class Contest(Document):
             [("start_at", 1)],
             [("end_at", 1)],
             [("status", 1), ("start_at", -1)],
+            [("contest_type", 1)],
         ]

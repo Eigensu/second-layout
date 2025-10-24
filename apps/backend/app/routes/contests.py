@@ -33,6 +33,8 @@ async def to_contest_response(contest: Contest) -> ContestResponse:
         status=contest.status,
         visibility=contest.visibility,
         points_scope=contest.points_scope,
+        contest_type=contest.contest_type,
+        allowed_teams=contest.allowed_teams or [],
         created_at=contest.created_at,
         updated_at=contest.updated_at,
     )
@@ -251,6 +253,24 @@ async def enroll_in_contest(
     team = await Team.get(tid)
     if not team or team.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Team not found")
+
+    # If daily contest with restrictions: validate team players belong to allowed teams
+    if contest.contest_type == "daily" and contest.allowed_teams:
+        # Load players of the team and ensure their real-world team is allowed
+        from bson import ObjectId as _OID
+        pid_oids = [PydanticObjectId(pid) for pid in team.player_ids if _OID.is_valid(pid)]
+        if pid_oids:
+            player_docs = await Player.find({"_id": {"$in": pid_oids}}).to_list()
+            disallowed = [p.name for p in player_docs if p.team and p.team not in contest.allowed_teams]
+            if disallowed:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "message": "Team contains players from disallowed teams for this daily contest",
+                        "disallowed_players": disallowed,
+                        "allowed_teams": contest.allowed_teams,
+                    },
+                )
 
     # Idempotent check
     existing = await TeamContestEnrollment.find_one({

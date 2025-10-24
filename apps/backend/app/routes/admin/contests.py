@@ -36,6 +36,8 @@ async def to_response(contest: Contest) -> ContestResponse:
         status=contest.status,
         visibility=contest.visibility,
         points_scope=contest.points_scope,
+        contest_type=contest.contest_type,
+        allowed_teams=contest.allowed_teams or [],
         created_at=contest.created_at,
         updated_at=contest.updated_at,
     )
@@ -63,6 +65,8 @@ async def create_contest(
         status=data.status,
         visibility=data.visibility,
         points_scope=data.points_scope,
+        contest_type=data.contest_type,
+        allowed_teams=data.allowed_teams,
         created_at=now,
         updated_at=now,
     )

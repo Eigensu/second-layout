@@ -107,6 +107,26 @@ async def create_team(
                 "violations": violations,
             },
         )
+
+    # If tied to a contest, enforce allowed teams for daily contests
+    if team_data.contest_id:
+        try:
+            contest = await Contest.get(PydanticObjectId(team_data.contest_id))
+        except Exception:
+            contest = None
+        if not contest:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid contest_id")
+        if contest.contest_type == "daily" and contest.allowed_teams:
+            disallowed = [p.name for p in players if p.team and p.team not in contest.allowed_teams]
+            if disallowed:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "message": "Selected players include teams disallowed for this daily contest",
+                        "disallowed_players": disallowed,
+                        "allowed_teams": contest.allowed_teams,
+                    },
+                )
     
     # Create team document
     team = Team(
@@ -251,14 +271,22 @@ async def update_team(
             detail="You don't have permission to update this team"
         )
     
-    # Lock edits if team is enrolled in any active contest
+    # Lock edits only if team is enrolled in a contest that is currently ongoing
     active_enrs = await TeamContestEnrollment.find({
         "team_id": team.id,
         "status": "active",
     }).to_list()
     if active_enrs:
+        from datetime import datetime as _dt
         contest_ids = [enr.contest_id for enr in active_enrs]
-        active_contest_count = await Contest.find({"_id": {"$in": contest_ids}, "status": "active"}).count()
+        # Ongoing = status active AND start_at <= now < end_at
+        now = _dt.utcnow()
+        active_contest_count = await Contest.find({
+            "_id": {"$in": contest_ids},
+            "status": "active",
+            "start_at": {"$lte": now},
+            "end_at": {"$gt": now},
+        }).count()
         if active_contest_count > 0:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -307,6 +335,24 @@ async def update_team(
                         )
                 players = await Player.find({"_id": {"$in": player_object_ids}}).to_list()
                 update_data["total_value"] = sum(player.price for player in players)
+
+                # If team belongs to a daily contest with restrictions, enforce allowed teams
+                if team.contest_id:
+                    try:
+                        contest = await Contest.get(PydanticObjectId(team.contest_id))
+                    except Exception:
+                        contest = None
+                    if contest and contest.contest_type == "daily" and contest.allowed_teams:
+                        disallowed = [p.name for p in players if p.team and p.team not in contest.allowed_teams]
+                        if disallowed:
+                            raise HTTPException(
+                                status_code=status.HTTP_400_BAD_REQUEST,
+                                detail={
+                                    "message": "Selected players include teams disallowed for this daily contest",
+                                    "disallowed_players": disallowed,
+                                    "allowed_teams": contest.allowed_teams,
+                                },
+                            )
 
                 # Per-slot constraints validation (same as create)
                 slot_counts: Dict[str, int] = {}
@@ -413,14 +459,21 @@ async def rename_team(
             detail="You don't have permission to rename this team"
         )
     
-    # Lock edits if team is enrolled in any active contest
+    # Lock edits only if team is enrolled in a contest that is currently ongoing
     active_enrs = await TeamContestEnrollment.find({
         "team_id": team.id,
         "status": "active",
     }).to_list()
     if active_enrs:
+        from datetime import datetime as _dt
         contest_ids = [enr.contest_id for enr in active_enrs]
-        active_contest_count = await Contest.find({"_id": {"$in": contest_ids}, "status": "active"}).count()
+        now = _dt.utcnow()
+        active_contest_count = await Contest.find({
+            "_id": {"$in": contest_ids},
+            "status": "active",
+            "start_at": {"$lte": now},
+            "end_at": {"$gt": now},
+        }).count()
         if active_contest_count > 0:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,

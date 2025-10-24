@@ -16,3 +16,8 @@ class ContestVisibility(str, Enum):
 class PointsScope(str, Enum):
     TIME_WINDOW = "time_window"
     SNAPSHOT = "snapshot"
+
+
+class ContestType(str, Enum):
+    DAILY = "daily"
+    FULL = "full"

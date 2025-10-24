@@ -12,6 +12,9 @@ class ContestCreate(BaseModel):
     status: Literal["draft", "active", "paused", "completed", "archived"] = "draft"
     visibility: Literal["public", "private"] = "public"
     points_scope: Literal["time_window", "snapshot"] = "time_window"
+    contest_type: Literal["daily", "full"] = "full"
+    # Allowed real-world team names (e.g., "IND", "AUS") for daily contests
+    allowed_teams: List[str] = Field(default_factory=list)
 
 
 class ContestUpdate(BaseModel):
@@ -22,6 +25,8 @@ class ContestUpdate(BaseModel):
     status: Optional[Literal["draft", "active", "paused", "completed", "archived"]] = None
     visibility: Optional[Literal["public", "private"]] = None
     points_scope: Optional[Literal["time_window", "snapshot"]] = None
+    contest_type: Optional[Literal["daily", "full"]] = None
+    allowed_teams: Optional[List[str]] = None
 
 
 class ContestResponse(BaseModel):
@@ -34,6 +39,8 @@ class ContestResponse(BaseModel):
     status: str
     visibility: str
     points_scope: str
+    contest_type: str
+    allowed_teams: List[str]
     created_at: datetime
     updated_at: datetime
 
