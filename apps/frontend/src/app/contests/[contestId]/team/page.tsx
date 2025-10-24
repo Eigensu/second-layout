@@ -215,10 +215,17 @@ export default function ContestTeamBuilderPage() {
         vice_captain_id: viceCaptainId,
         contest_id: selectedContestId || undefined,
       };
+      const gotoTeams = () => {
+        const qs = selectedContestId
+          ? `?contest_id=${encodeURIComponent(String(selectedContestId))}`
+          : "";
+        router.push(`/teams${qs}`);
+      };
+
       if (editMode && existingTeam) {
         // Update existing team
         await updateTeam(existingTeam.id, teamData, token);
-        alert("Team updated successfully");
+        gotoTeams();
       } else {
         const created = await createTeam(teamData, token);
         if (selectedContestId) {
@@ -232,7 +239,7 @@ export default function ContestTeamBuilderPage() {
             );
           }
         }
-        router.push(`/contests/${contestId}/leaderboard`);
+        gotoTeams();
       }
     } catch (err: any) {
       console.error("Failed to submit team:", err);
@@ -555,6 +562,7 @@ export default function ContestTeamBuilderPage() {
                                 onSetViceCaptain={handleSetViceCaptain}
                                 onReplace={openReplace}
                                 showActions={true}
+                                variant="captain"
                               />
                             ))}
                         </div>

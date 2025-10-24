@@ -3,8 +3,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { BarChart3, User, Trophy, Crown } from "lucide-react";
-import { publicContestsApi, Contest, type EnrollmentResponse } from "@/lib/api/public/contests";
+import { BarChart3, User, Crown } from "lucide-react";
+import {
+  publicContestsApi,
+  Contest,
+  type EnrollmentResponse,
+} from "@/lib/api/public/contests";
+import { PageLoader } from "@/components";
 
 export default function ContestDetailsPage() {
   const { isAuthenticated } = useAuth();
@@ -35,7 +40,8 @@ export default function ContestDetailsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const mine: EnrollmentResponse[] = await publicContestsApi.myEnrollments();
+        const mine: EnrollmentResponse[] =
+          await publicContestsApi.myEnrollments();
         setIsJoined(mine.some((e) => e.contest_id === contestId));
       } catch {
         // ignore unauthenticated or unavailable
@@ -45,17 +51,12 @@ export default function ContestDetailsPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-4">
-      {loading && <div>Loading...</div>}
+      {loading && <PageLoader message="wallearena is getting your contest..." />}
       {error && <div className="text-red-600">{error}</div>}
       {contest && (
         <>
           {/* Header: subtle badge + big gradient title */}
           <div className="text-center mb-10 -mt-12">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-primary text-white text-xs font-semibold shadow-sm mb-4">
-              <Trophy className="w-4 h-4" />
-              <span>Live Contest</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-white/90" />
-            </div>
             <div className="relative inline-block mb-2">
               <Crown className="w-8 h-8 text-primary-500/70 absolute -top-4 -left-6 hidden sm:block" />
               <Crown className="w-8 h-8 text-primary-500/70 absolute -top-4 -right-6 hidden sm:block" />
@@ -70,30 +71,7 @@ export default function ContestDetailsPage() {
 
           {/* Action cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-stretch">
-            {/* Leaderboard side */}
-            <button
-              onClick={() => router.push(`/contests/${contest.id}/leaderboard`)}
-              className="group w-full h-full rounded-3xl overflow-hidden p-[2px] bg-gradient-primary shadow-lg transition transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-primary/40"
-            >
-              <div className="h-full w-full rounded-3xl bg-gradient-primary">
-                <div className="p-8 sm:p-10 lg:p-14 text-white flex flex-col items-center justify-center text-center min-h-[320px] sm:min-h-[360px] lg:min-h-[380px] h-full">
-                  <div className="mb-6 p-4 rounded-2xl bg-white/20 backdrop-blur-sm">
-                    <BarChart3 className="w-16 h-16 text-white" />
-                  </div>
-                  <h2 className="text-4xl sm:text-5xl font-black tracking-tight drop-shadow">
-                    Leaderboard
-                  </h2>
-                  <p className="mt-3 text-white/90 text-sm sm:text-base">
-                    See how you rank against the best
-                  </p>
-                  <div className="mt-8 inline-flex items-center px-8 py-3 rounded-full bg-white/20 hover:bg-white/30 text-white text-sm font-semibold transition">
-                    View Rankings
-                  </div>
-                </div>
-              </div>
-            </button>
-
-            {/* Make/View team side */}
+            {/* Make/View team side (first) */}
             <button
               onClick={() => {
                 const target = `/contests/${contest.id}/team`;
@@ -113,10 +91,35 @@ export default function ContestDetailsPage() {
                   {isJoined ? "View Team" : "Make Team"}
                 </h2>
                 <p className="mt-3 text-primary-700/80 text-sm sm:text-base">
-                  {isJoined ? "Open your registered team" : "Assemble your squad and compete together"}
+                  {isJoined
+                    ? "Open your registered team"
+                    : "Assemble your squad and compete together"}
                 </p>
                 <div className="mt-8 inline-flex items-center px-8 py-3 rounded-full bg-gradient-primary text-white text-sm font-semibold shadow transition">
                   {isJoined ? "Go to Team" : "Start Building"}
+                </div>
+              </div>
+            </button>
+
+            {/* Leaderboard side (second) */}
+            <button
+              onClick={() => router.push(`/contests/${contest.id}/leaderboard`)}
+              className="group w-full h-full rounded-3xl overflow-hidden p-[2px] bg-gradient-primary shadow-lg transition transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-primary/40"
+            >
+              <div className="h-full w-full rounded-3xl bg-gradient-primary">
+                <div className="p-8 sm:p-10 lg:p-14 text-white flex flex-col items-center justify-center text-center min-h-[320px] sm:min-h-[360px] lg:min-h-[380px] h-full">
+                  <div className="mb-6 p-4 rounded-2xl bg-white/20 backdrop-blur-sm">
+                    <BarChart3 className="w-16 h-16 text-white" />
+                  </div>
+                  <h2 className="text-4xl sm:text-5xl font-black tracking-tight drop-shadow">
+                    Leaderboard
+                  </h2>
+                  <p className="mt-3 text-white/90 text-sm sm:text-base">
+                    See how you rank against the best
+                  </p>
+                  <div className="mt-8 inline-flex items-center px-8 py-3 rounded-full bg-white/20 hover:bg-white/30 text-white text-sm font-semibold transition">
+                    View Rankings
+                  </div>
                 </div>
               </div>
             </button>

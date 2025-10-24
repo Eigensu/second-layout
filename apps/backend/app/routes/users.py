@@ -27,6 +27,7 @@ async def get_current_user_info(
         mobile=current_user.mobile,
         is_active=current_user.is_active,
         is_verified=current_user.is_verified,
+        is_admin=current_user.is_admin,
         created_at=current_user.created_at,
         avatar_url=avatar_url
     )
@@ -61,6 +62,7 @@ async def update_current_user(
         mobile=current_user.mobile,
         is_active=current_user.is_active,
         is_verified=current_user.is_verified,
+        is_admin=current_user.is_admin,
         created_at=current_user.created_at,
         avatar_url=current_user.avatar_url
     )

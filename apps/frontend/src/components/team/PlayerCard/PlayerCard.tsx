@@ -18,6 +18,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   className = "",
   compactShowPrice = false,
   disabled = false,
+  variant = "default",
 }) => {
   // Visual accent based on team initial; simple deterministic color
   const getAvatarGradient = () => undefined;
@@ -151,19 +152,19 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
       )}
 
-      <div className="p-3 sm:p-4">
+      <div className={`p-3 ${variant === "captain" ? "sm:p-3" : "sm:p-4"}`}>
         {/* Player Header */}
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <div className={`flex items-center justify-between ${variant === "captain" ? "mb-2" : "mb-3 sm:mb-4"}`}>
           <div className="flex items-center space-x-2 sm:space-x-3">
             <Avatar
               name={player.name}
               src={player.image}
-              size="md"
+              size={variant === "captain" ? "lg" : "md"}
               gradientClassName={getAvatarGradient()}
             />
 
             <div>
-              <h4 className="font-semibold text-sm sm:text-base text-gray-900">
+              <h4 className={`font-semibold text-gray-900 ${variant === "captain" ? "text-sm sm:text-base" : "text-sm sm:text-base"}`}>
                 {player.name}
               </h4>
               <div className="flex items-center space-x-1.5 sm:space-x-2 mt-0.5 sm:mt-1">
@@ -203,25 +204,36 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
 
         {/* Player Stats */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-          <div className="text-center">
-            <div className="text-base sm:text-lg font-bold text-success-600">
-              {player.points}
-            </div>
-            <div className="text-[10px] sm:text-xs text-gray-500">
-              Fantasy Points
+        {variant === "captain" ? (
+          <div className="mb-2 sm:mb-3">
+            <div className="text-center">
+              <div className="text-lg font-bold text-success-600">
+                {player.points}
+              </div>
+              <div className="text-[10px] sm:text-xs text-gray-500">Fantasy Points</div>
             </div>
           </div>
-          <div className="text-center">
-            <div className="text-base sm:text-lg font-bold text-gray-900">
-              ₹{Math.floor(player.price)}
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="text-center">
+              <div className="text-base sm:text-lg font-bold text-success-600">
+                {player.points}
+              </div>
+              <div className="text-[10px] sm:text-xs text-gray-500">
+                Fantasy Points
+              </div>
             </div>
-            <div className="text-[10px] sm:text-xs text-gray-500">Price</div>
+            <div className="text-center">
+              <div className="text-base sm:text-lg font-bold text-gray-900">
+                ₹{Math.floor(player.price)}
+              </div>
+              <div className="text-[10px] sm:text-xs text-gray-500">Price</div>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Additional Stats */}
-        {player.stats && (
+        {player.stats && variant !== "captain" && (
           <div className="grid grid-cols-3 gap-2 pt-2 sm:pt-3 border-t border-gray-100">
             <div className="text-center">
               <div className="text-sm sm:text-base font-medium text-gray-900">
@@ -254,40 +266,42 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 
         {/* Action Buttons */}
         {showActions && isSelected && (
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-gray-100">
+          <div className={`mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-gray-100`}>
             {onReplace && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onReplace(player.id);
                 }}
-                className="flex-1 px-3 py-2 sm:py-1.5 text-xs sm:text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100"
+                className="w-full mb-2 px-3 py-2 sm:py-1.5 text-xs sm:text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100"
               >
                 Replace
               </button>
             )}
-            {onSetCaptain && !isCaptain && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSetCaptain(player.id);
-                }}
-                className="flex-1 px-3 py-2 sm:py-1.5 text-xs sm:text-sm font-medium text-warning-700 bg-warning-50 border border-warning-200 rounded-lg hover:bg-warning-100"
-              >
-                Make Captain
-              </button>
-            )}
-            {onSetViceCaptain && !isViceCaptain && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSetViceCaptain(player.id);
-                }}
-                className="flex-1 px-3 py-2 sm:py-1.5 text-xs sm:text-sm font-medium text-secondary-700 bg-secondary-50 border border-secondary-200 rounded-lg hover:bg-secondary-100"
-              >
-                Make V.Captain
-              </button>
-            )}
+            <div className="flex flex-row gap-2">
+              {onSetCaptain && !isCaptain && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSetCaptain(player.id);
+                  }}
+                  className="flex-1 px-3 py-2 sm:py-1.5 text-xs sm:text-sm font-medium text-warning-700 bg-warning-50 border border-warning-200 rounded-lg hover:bg-warning-100"
+                >
+                  Make Captain
+                </button>
+              )}
+              {onSetViceCaptain && !isViceCaptain && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSetViceCaptain(player.id);
+                  }}
+                  className="flex-1 px-3 py-2 sm:py-1.5 text-xs sm:text-sm font-medium text-secondary-700 bg-secondary-50 border border-secondary-200 rounded-lg hover:bg-secondary-100"
+                >
+                  Make V.Captain
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

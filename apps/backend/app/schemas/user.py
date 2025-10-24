@@ -12,6 +12,7 @@ class UserResponse(BaseModel):
     mobile: Optional[str]
     is_active: bool
     is_verified: bool
+    is_admin: bool
     created_at: datetime
     avatar_url: Optional[str]
 

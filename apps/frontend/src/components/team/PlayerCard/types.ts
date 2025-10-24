@@ -28,6 +28,8 @@ export interface PlayerCardProps {
   className?: string;
   compactShowPrice?: boolean;
   disabled?: boolean;
+  /** Visual/layout variant. Use 'captain' in Step 2 to hide price/matches and show larger avatar. */
+  variant?: "default" | "captain";
 }
 
 export interface PlayerListProps {

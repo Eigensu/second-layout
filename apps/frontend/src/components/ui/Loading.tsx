@@ -44,11 +44,11 @@ const Spinner: React.FC<SpinnerProps> = ({ size = "md", className = "" }) => {
 };
 
 // Page Loading Component
-const PageLoader: React.FC = () => (
+const PageLoader: React.FC<{ message?: string }> = ({ message }) => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
     <div className="text-center">
       <Spinner size="lg" className="mb-4 mx-auto" />
-      <p className="text-gray-600">Loading Wall-E Arena...</p>
+      <p className="text-gray-600">{message || "WalleArena is loading..."}</p>
     </div>
   </div>
 );

@@ -35,7 +35,12 @@ interface PillNavbarProps {
 }
 
 const DEFAULT_ITEMS: PillNavItem[] = [
-  { id: "home", label: "Home", href: "/home", icon: <Home className="w-4 h-4" /> },
+  {
+    id: "home",
+    label: "Home",
+    href: "/home",
+    icon: <Home className="w-4 h-4" />,
+  },
   {
     id: "contests",
     label: "Contests",
@@ -54,12 +59,12 @@ const DEFAULT_ITEMS: PillNavItem[] = [
     href: "/sponsors",
     icon: <Star className="w-4 h-4" />,
   },
-  {
-    id: "about",
-    label: "About",
-    href: "/about",
-    icon: <Info className="w-4 h-4" />,
-  },
+  // {
+  //   id: "about",
+  //   label: "About",
+  //   href: "/about",
+  //   icon: <Info className="w-4 h-4" />,
+  // },
 ];
 
 const PillNavbar: React.FC<PillNavbarProps> = ({
@@ -190,7 +195,12 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
                   aria-haspopup="menu"
                   aria-expanded={userMenuOpen}
                 >
-                  <Avatar name={user?.username || "User"} src={user?.avatar_url || undefined} size="sm" className="h-7 w-7" />
+                  <Avatar
+                    name={user?.username || "User"}
+                    src={user?.avatar_url || undefined}
+                    size="sm"
+                    className="h-7 w-7"
+                  />
                   <span className="text-gray-700">Account</span>
                   <ChevronDown
                     className={`h-4 w-4 text-gray-500 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}

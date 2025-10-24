@@ -14,7 +14,11 @@ import {
   type TeamResponse,
 } from "@/lib/api/teams";
 import { API_BASE_URL, LS_KEYS, ROUTES } from "@/common/consts";
-import { publicContestsApi, type Contest as PublicContest, type ContestTeamResponse } from "@/lib/api/public/contests";
+import {
+  publicContestsApi,
+  type Contest as PublicContest,
+  type ContestTeamResponse,
+} from "@/lib/api/public/contests";
 import { ReplacePlayerModal } from "@/components/team/Edit/ReplacePlayerModal";
 
 type ApiPlayer = {
@@ -55,15 +59,26 @@ export default function TeamsPage() {
   // Contests state for join action
   const [contests, setContests] = useState<PublicContest[]>([]);
   const [loadingContests, setLoadingContests] = useState(false);
-  const [selectedContestByTeam, setSelectedContestByTeam] = useState<Record<string, string>>({});
+  const [selectedContestByTeam, setSelectedContestByTeam] = useState<
+    Record<string, string>
+  >({});
   const [enrollingTeamId, setEnrollingTeamId] = useState<string | null>(null);
-  const [enrollSuccessByTeam, setEnrollSuccessByTeam] = useState<Record<string, { contestId: string; contestName: string }>>({});
+  const [enrollSuccessByTeam, setEnrollSuccessByTeam] = useState<
+    Record<string, { contestId: string; contestName: string }>
+  >({});
   // Joined contest to display beside Create New Team
-  const [joinedContest, setJoinedContest] = useState<{ id: string; name: string } | null>(null);
+  const [joinedContest, setJoinedContest] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   // Map of team -> enrolled contest (for per-team display)
-  const [enrollmentByTeam, setEnrollmentByTeam] = useState<Record<string, { contestId: string; contestName: string }>>({});
+  const [enrollmentByTeam, setEnrollmentByTeam] = useState<
+    Record<string, { contestId: string; contestName: string }>
+  >({});
   // Per-contest data when contest_id is present in the URL
-  const [contestDataByTeam, setContestDataByTeam] = useState<Record<string, ContestTeamResponse>>({});
+  const [contestDataByTeam, setContestDataByTeam] = useState<
+    Record<string, ContestTeamResponse>
+  >({});
 
   const normalizeRole = (role: string): string => {
     const r = role.toLowerCase();
@@ -157,9 +172,15 @@ export default function TeamsPage() {
           }
         }
         if (!mounted) return;
-        const mapped: Record<string, { contestId: string; contestName: string }> = {};
+        const mapped: Record<
+          string,
+          { contestId: string; contestName: string }
+        > = {};
         for (const [teamId, contestId] of Object.entries(byTeam)) {
-          mapped[teamId] = { contestId, contestName: idToName[contestId] || "Contest" };
+          mapped[teamId] = {
+            contestId,
+            contestName: idToName[contestId] || "Contest",
+          };
         }
         setEnrollmentByTeam(mapped);
       } catch (_) {
@@ -217,7 +238,10 @@ export default function TeamsPage() {
         // Fetch sequentially to avoid API burst; can parallelize later if needed
         for (const t of targetTeams) {
           try {
-            const data = await publicContestsApi.teamInContest(contestIdParam, t.id);
+            const data = await publicContestsApi.teamInContest(
+              contestIdParam,
+              t.id
+            );
             results[t.id] = data;
           } catch (_) {
             // ignore if not enrolled
@@ -241,7 +265,9 @@ export default function TeamsPage() {
       try {
         setLoadingContests(true);
         const res = await publicContestsApi.list({ page_size: 100 });
-        const open = res.contests.filter((c) => c.status !== "completed" && c.status !== "archived");
+        const open = res.contests.filter(
+          (c) => c.status !== "completed" && c.status !== "archived"
+        );
         setContests(open);
       } catch (e) {
         // ignore silently
@@ -260,7 +286,11 @@ export default function TeamsPage() {
         // Prefer enrollments endpoint
         const enrollments = await publicContestsApi.myEnrollments();
         if (Array.isArray(enrollments) && enrollments.length > 0) {
-          enrollments.sort((a, b) => new Date(b.enrolled_at).getTime() - new Date(a.enrolled_at).getTime());
+          enrollments.sort(
+            (a, b) =>
+              new Date(b.enrolled_at).getTime() -
+              new Date(a.enrolled_at).getTime()
+          );
           const latest = enrollments[0];
           try {
             const c = await publicContestsApi.getMe(latest.contest_id);
@@ -282,7 +312,10 @@ export default function TeamsPage() {
         const list = res.contests || [];
         for (const c of list) {
           try {
-            const lb = await publicContestsApi.leaderboard(c.id, { skip: 0, limit: 1 });
+            const lb = await publicContestsApi.leaderboard(c.id, {
+              skip: 0,
+              limit: 1,
+            });
             if (lb.currentUserEntry) {
               if (mounted) setJoinedContest({ id: c.id, name: c.name });
               break;
@@ -314,10 +347,17 @@ export default function TeamsPage() {
     try {
       setEnrollingTeamId(team.id);
       await publicContestsApi.enroll(contestId, team.id);
-      const contestName = contests.find((c) => c.id === contestId)?.name || "Contest";
-      setEnrollSuccessByTeam((prev) => ({ ...prev, [team.id]: { contestId, contestName } }));
+      const contestName =
+        contests.find((c) => c.id === contestId)?.name || "Contest";
+      setEnrollSuccessByTeam((prev) => ({
+        ...prev,
+        [team.id]: { contestId, contestName },
+      }));
       // Also update per-team enrollment map for immediate UI feedback
-      setEnrollmentByTeam((prev) => ({ ...prev, [team.id]: { contestId, contestName } }));
+      setEnrollmentByTeam((prev) => ({
+        ...prev,
+        [team.id]: { contestId, contestName },
+      }));
     } catch (e: any) {
       alert(e?.response?.data?.detail || e?.message || "Failed to enroll");
     } finally {
@@ -403,7 +443,11 @@ export default function TeamsPage() {
     try {
       setUpdatingTeamId(actionTeamId);
       const token = localStorage.getItem(LS_KEYS.ACCESS_TOKEN) as string;
-      const updated = await updateTeam(actionTeamId, { captain_id: actionPlayerId }, token);
+      const updated = await updateTeam(
+        actionTeamId,
+        { captain_id: actionPlayerId },
+        token
+      );
       setTeams((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
     } catch (e: any) {
       alert(e?.message || "Failed to set captain");
@@ -418,7 +462,11 @@ export default function TeamsPage() {
     try {
       setUpdatingTeamId(actionTeamId);
       const token = localStorage.getItem(LS_KEYS.ACCESS_TOKEN) as string;
-      const updated = await updateTeam(actionTeamId, { vice_captain_id: actionPlayerId }, token);
+      const updated = await updateTeam(
+        actionTeamId,
+        { vice_captain_id: actionPlayerId },
+        token
+      );
       setTeams((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
     } catch (e: any) {
       alert(e?.message || "Failed to set vice-captain");
@@ -437,11 +485,19 @@ export default function TeamsPage() {
     if (!actionTeamId || !actionPlayerId) return;
     const team = teams.find((t) => t.id === actionTeamId);
     if (!team) return;
-    const newIds = team.player_ids.map((id) => (id === actionPlayerId ? newPlayerId : id));
+    const newIds = team.player_ids.map((id) =>
+      id === actionPlayerId ? newPlayerId : id
+    );
     // If the replaced player was captain/VC, transfer to the new player
-    const payload: Partial<{ player_ids: string[]; captain_id: string; vice_captain_id: string }> = { player_ids: newIds } as any;
-    if (team.captain_id === actionPlayerId) (payload as any).captain_id = newPlayerId;
-    if (team.vice_captain_id === actionPlayerId) (payload as any).vice_captain_id = newPlayerId;
+    const payload: Partial<{
+      player_ids: string[];
+      captain_id: string;
+      vice_captain_id: string;
+    }> = { player_ids: newIds } as any;
+    if (team.captain_id === actionPlayerId)
+      (payload as any).captain_id = newPlayerId;
+    if (team.vice_captain_id === actionPlayerId)
+      (payload as any).vice_captain_id = newPlayerId;
     try {
       setUpdatingTeamId(actionTeamId);
       const token = localStorage.getItem(LS_KEYS.ACCESS_TOKEN) as string;
@@ -467,192 +523,391 @@ export default function TeamsPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-gray-500 py-12">
             Loading your teams...
-          {/* Action Modal */}
-    {showActionModal && actionTeamId && actionPlayerId && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-          <div className="flex items-center justify-between px-5 py-3 border-b">
-            <h3 className="font-semibold text-gray-900">Player Actions</h3>
-            <button onClick={closeModals} className="text-gray-500 hover:text-gray-700">✕</button>
-          </div>
-
-    {/* Action Modal */}
-    {showActionModal && actionTeamId && actionPlayerId && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-          <div className="flex items-center justify-between px-5 py-3 border-b">
-            <h3 className="font-semibold text-gray-900">Player Actions</h3>
-            <button onClick={closeModals} className="text-gray-500 hover:text-gray-700">✕</button>
-          </div>
-          <div className="p-5 space-y-3">
-            <Button variant="secondary" className="w-full" onClick={openReplace}>Replace Player</Button>
-            <div className="flex gap-2">
-              <Button variant="primary" className="flex-1" onClick={doMakeCaptain} disabled={updatingTeamId === actionTeamId}>{updatingTeamId === actionTeamId ? "Saving..." : "Make Captain"}</Button>
-              <Button variant="primary" className="flex-1" onClick={doMakeViceCaptain} disabled={updatingTeamId === actionTeamId}>{updatingTeamId === actionTeamId ? "Saving..." : "Make V.Captain"}</Button>
-            </div>
-          </div>
-          <div className="px-5 py-3 border-t flex justify-end">
-            <Button variant="ghost" onClick={closeModals}>Close</Button>
-          </div>
-        </div>
-      </div>
-    )}
-
-    {/* Replace Modal */}
-    {showReplaceModal && actionTeamId && actionPlayerId && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-          <div className="flex items-center justify-between px-5 py-3 border-b">
-            <h3 className="font-semibold text-gray-900">Replace Player</h3>
-            <button onClick={closeModals} className="text-gray-500 hover:text-gray-700">✕</button>
-          </div>
-          <div className="p-5 max-h-[70vh] overflow-y-auto space-y-3">
-            {(() => {
-              const team = teams.find((t) => t.id === actionTeamId);
-              const target = players.find((p) => p.id === actionPlayerId);
-              if (!team || !target) return <div className="text-gray-500">No player selected.</div>;
-              const sameSlotCandidates = players.filter((p) => p.slot === target.slot && !team.player_ids.includes(p.id));
-              return (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {sameSlotCandidates.map((p) => (
-                    <button key={p.id} onClick={() => confirmReplace(p.id)} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 text-left">
-                      <Avatar name={p.name} size="sm" />
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">{p.name}</div>
-                        <div className="text-xs text-gray-500">{roleToSlotLabel(p.role || "")} • {p.team}</div>
-                      </div>
-                      <div className="text-right text-sm text-success-600">{Math.floor(p.points || 0)} pts</div>
+            {/* Action Modal */}
+            {showActionModal && actionTeamId && actionPlayerId && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+                  <div className="flex items-center justify-between px-5 py-3 border-b">
+                    <h3 className="font-semibold text-gray-900">
+                      Player Actions
+                    </h3>
+                    <button
+                      onClick={closeModals}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      ✕
                     </button>
-                  ))}
-                  {sameSlotCandidates.length === 0 && (
-                    <div className="text-sm text-gray-500">No available players in this slot.</div>
-                  )}
-                </div>
-              );
-            })()}
-          </div>
-          <div className="px-5 py-3 border-t flex justify-end">
-            <Button variant="ghost" onClick={closeModals}>Close</Button>
-          </div>
-        </div>
-      </div>
-    )}
-    {/* Action Modal */}
-    {showActionModal && actionTeamId && actionPlayerId && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-          <div className="flex items-center justify-between px-5 py-3 border-b">
-            <h3 className="font-semibold text-gray-900">Player Actions</h3>
-            <button onClick={closeModals} className="text-gray-500 hover:text-gray-700">✕</button>
-          </div>
-          <div className="p-5 space-y-3">
-            <Button variant="secondary" className="w-full" onClick={openReplace}>Replace Player</Button>
-            <div className="flex gap-2">
-              <Button variant="primary" className="flex-1" onClick={doMakeCaptain} disabled={updatingTeamId === actionTeamId}>{updatingTeamId === actionTeamId ? "Saving..." : "Make Captain"}</Button>
-              <Button variant="primary" className="flex-1" onClick={doMakeViceCaptain} disabled={updatingTeamId === actionTeamId}>{updatingTeamId === actionTeamId ? "Saving..." : "Make V.Captain"}</Button>
-            </div>
-          </div>
-          <div className="px-5 py-3 border-t flex justify-end">
-            <Button variant="ghost" onClick={closeModals}>Close</Button>
-          </div>
-        </div>
-      </div>
-    )}
+                  </div>
 
-    {/* Replace Modal */}
-    {showReplaceModal && actionTeamId && actionPlayerId && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-          <div className="flex items-center justify-between px-5 py-3 border-b">
-            <h3 className="font-semibold text-gray-900">Replace Player</h3>
-            <button onClick={closeModals} className="text-gray-500 hover:text-gray-700">✕</button>
-          </div>
-          <div className="p-5 max-h-[70vh] overflow-y-auto space-y-3">
-            {(() => {
-              const team = teams.find((t) => t.id === actionTeamId);
-              const target = players.find((p) => p.id === actionPlayerId);
-              if (!team || !target) return <div className="text-gray-500">No player selected.</div>;
-              const sameSlotCandidates = players.filter((p) => p.slot === target.slot && !team.player_ids.includes(p.id));
-              return (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {sameSlotCandidates.map((p) => (
-                    <button key={p.id} onClick={() => confirmReplace(p.id)} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 text-left">
-                      <Avatar name={p.name} size="sm" />
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">{p.name}</div>
-                        <div className="text-xs text-gray-500">{roleToSlotLabel(p.role || "")} • {p.team}</div>
+                  {/* Action Modal */}
+                  {showActionModal && actionTeamId && actionPlayerId && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+                        <div className="flex items-center justify-between px-5 py-3 border-b">
+                          <h3 className="font-semibold text-gray-900">
+                            Player Actions
+                          </h3>
+                          <button
+                            onClick={closeModals}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="p-5 space-y-3">
+                          <Button
+                            variant="secondary"
+                            className="w-full"
+                            onClick={openReplace}
+                          >
+                            Replace Player
+                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="primary"
+                              className="flex-1"
+                              onClick={doMakeCaptain}
+                              disabled={updatingTeamId === actionTeamId}
+                            >
+                              {updatingTeamId === actionTeamId
+                                ? "Saving..."
+                                : "Make Captain"}
+                            </Button>
+                            <Button
+                              variant="primary"
+                              className="flex-1"
+                              onClick={doMakeViceCaptain}
+                              disabled={updatingTeamId === actionTeamId}
+                            >
+                              {updatingTeamId === actionTeamId
+                                ? "Saving..."
+                                : "Make V.Captain"}
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="px-5 py-3 border-t flex justify-end">
+                          <Button variant="ghost" onClick={closeModals}>
+                            Close
+                          </Button>
+                        </div>
                       </div>
-                      <div className="text-right text-sm text-success-600">{Math.floor(p.points || 0)} pts</div>
-                    </button>
-                  ))}
-                  {sameSlotCandidates.length === 0 && (
-                    <div className="text-sm text-gray-500">No available players in this slot.</div>
+                    </div>
                   )}
-                </div>
-              );
-            })()}
-          </div>
-          <div className="px-5 py-3 border-t flex justify-end">
-            <Button variant="ghost" onClick={closeModals}>Close</Button>
-          </div>
-        </div>
-      </div>
-    )}
-          <div className="p-5 space-y-3">
-            <Button variant="secondary" className="w-full" onClick={openReplace}>Replace Player</Button>
-            <div className="flex gap-2">
-              <Button variant="primary" className="flex-1" onClick={doMakeCaptain} disabled={updatingTeamId === actionTeamId}>{updatingTeamId === actionTeamId ? "Saving..." : "Make Captain"}</Button>
-              <Button variant="primary" className="flex-1" onClick={doMakeViceCaptain} disabled={updatingTeamId === actionTeamId}>{updatingTeamId === actionTeamId ? "Saving..." : "Make V.Captain"}</Button>
-            </div>
-          </div>
-          <div className="px-5 py-3 border-t flex justify-end">
-            <Button variant="ghost" onClick={closeModals}>Close</Button>
-          </div>
-        </div>
-      </div>
-    )}
 
-    {/* Replace Modal */}
-    {showReplaceModal && actionTeamId && actionPlayerId && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-          <div className="flex items-center justify-between px-5 py-3 border-b">
-            <h3 className="font-semibold text-gray-900">Replace Player</h3>
-            <button onClick={closeModals} className="text-gray-500 hover:text-gray-700">✕</button>
-          </div>
-          <div className="p-5 max-h-[70vh] overflow-y-auto space-y-3">
-            {(() => {
-              const team = teams.find((t) => t.id === actionTeamId);
-              const target = players.find((p) => p.id === actionPlayerId);
-              if (!team || !target) return <div className="text-gray-500">No player selected.</div>;
-              const sameSlotCandidates = players.filter((p) => p.slot === target.slot && !team.player_ids.includes(p.id));
-              return (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {sameSlotCandidates.map((p) => (
-                    <button key={p.id} onClick={() => confirmReplace(p.id)} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 text-left">
-                      <Avatar name={p.name} size="sm" />
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">{p.name}</div>
-                        <div className="text-xs text-gray-500">{roleToSlotLabel(p.role || "")} • {p.team}</div>
+                  {/* Replace Modal */}
+                  {showReplaceModal && actionTeamId && actionPlayerId && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl">
+                        <div className="flex items-center justify-between px-5 py-3 border-b">
+                          <h3 className="font-semibold text-gray-900">
+                            Replace Player
+                          </h3>
+                          <button
+                            onClick={closeModals}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="p-5 max-h-[70vh] overflow-y-auto space-y-3">
+                          {(() => {
+                            const team = teams.find(
+                              (t) => t.id === actionTeamId
+                            );
+                            const target = players.find(
+                              (p) => p.id === actionPlayerId
+                            );
+                            if (!team || !target)
+                              return (
+                                <div className="text-gray-500">
+                                  No player selected.
+                                </div>
+                              );
+                            const sameSlotCandidates = players.filter(
+                              (p) =>
+                                p.slot === target.slot &&
+                                !team.player_ids.includes(p.id)
+                            );
+                            return (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {sameSlotCandidates.map((p) => (
+                                  <button
+                                    key={p.id}
+                                    onClick={() => confirmReplace(p.id)}
+                                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 text-left"
+                                  >
+                                    <Avatar name={p.name} size="sm" />
+                                    <div className="flex-1">
+                                      <div className="font-medium text-gray-900">
+                                        {p.name}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {roleToSlotLabel(p.role || "")} •{" "}
+                                        {p.team}
+                                      </div>
+                                    </div>
+                                    <div className="text-right text-sm text-success-600">
+                                      {Math.floor(p.points || 0)} pts
+                                    </div>
+                                  </button>
+                                ))}
+                                {sameSlotCandidates.length === 0 && (
+                                  <div className="text-sm text-gray-500">
+                                    No available players in this slot.
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                        <div className="px-5 py-3 border-t flex justify-end">
+                          <Button variant="ghost" onClick={closeModals}>
+                            Close
+                          </Button>
+                        </div>
                       </div>
-                      <div className="text-right text-sm text-success-600">{Math.floor(p.points || 0)} pts</div>
-                    </button>
-                  ))}
-                  {sameSlotCandidates.length === 0 && (
-                    <div className="text-sm text-gray-500">No available players in this slot.</div>
+                    </div>
                   )}
-                </div>
-              );
-            })()}
-          </div>
-          <div className="px-5 py-3 border-t flex justify-end">
-            <Button variant="ghost" onClick={closeModals}>Close</Button>
-          </div>
-        </div>
-      </div>
-    )}
+                  {/* Action Modal */}
+                  {showActionModal && actionTeamId && actionPlayerId && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+                        <div className="flex items-center justify-between px-5 py-3 border-b">
+                          <h3 className="font-semibold text-gray-900">
+                            Player Actions
+                          </h3>
+                          <button
+                            onClick={closeModals}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="p-5 space-y-3">
+                          <Button
+                            variant="secondary"
+                            className="w-full"
+                            onClick={openReplace}
+                          >
+                            Replace Player
+                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="primary"
+                              className="flex-1"
+                              onClick={doMakeCaptain}
+                              disabled={updatingTeamId === actionTeamId}
+                            >
+                              {updatingTeamId === actionTeamId
+                                ? "Saving..."
+                                : "Make Captain"}
+                            </Button>
+                            <Button
+                              variant="primary"
+                              className="flex-1"
+                              onClick={doMakeViceCaptain}
+                              disabled={updatingTeamId === actionTeamId}
+                            >
+                              {updatingTeamId === actionTeamId
+                                ? "Saving..."
+                                : "Make V.Captain"}
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="px-5 py-3 border-t flex justify-end">
+                          <Button variant="ghost" onClick={closeModals}>
+                            Close
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-    </div>
+                  {/* Replace Modal */}
+                  {showReplaceModal && actionTeamId && actionPlayerId && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl">
+                        <div className="flex items-center justify-between px-5 py-3 border-b">
+                          <h3 className="font-semibold text-gray-900">
+                            Replace Player
+                          </h3>
+                          <button
+                            onClick={closeModals}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="p-5 max-h-[70vh] overflow-y-auto space-y-3">
+                          {(() => {
+                            const team = teams.find(
+                              (t) => t.id === actionTeamId
+                            );
+                            const target = players.find(
+                              (p) => p.id === actionPlayerId
+                            );
+                            if (!team || !target)
+                              return (
+                                <div className="text-gray-500">
+                                  No player selected.
+                                </div>
+                              );
+                            const sameSlotCandidates = players.filter(
+                              (p) =>
+                                p.slot === target.slot &&
+                                !team.player_ids.includes(p.id)
+                            );
+                            return (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {sameSlotCandidates.map((p) => (
+                                  <button
+                                    key={p.id}
+                                    onClick={() => confirmReplace(p.id)}
+                                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 text-left"
+                                  >
+                                    <Avatar name={p.name} size="sm" />
+                                    <div className="flex-1">
+                                      <div className="font-medium text-gray-900">
+                                        {p.name}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {roleToSlotLabel(p.role || "")} •{" "}
+                                        {p.team}
+                                      </div>
+                                    </div>
+                                    <div className="text-right text-sm text-success-600">
+                                      {Math.floor(p.points || 0)} pts
+                                    </div>
+                                  </button>
+                                ))}
+                                {sameSlotCandidates.length === 0 && (
+                                  <div className="text-sm text-gray-500">
+                                    No available players in this slot.
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                        <div className="px-5 py-3 border-t flex justify-end">
+                          <Button variant="ghost" onClick={closeModals}>
+                            Close
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className="p-5 space-y-3">
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      onClick={openReplace}
+                    >
+                      Replace Player
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="primary"
+                        className="flex-1"
+                        onClick={doMakeCaptain}
+                        disabled={updatingTeamId === actionTeamId}
+                      >
+                        {updatingTeamId === actionTeamId
+                          ? "Saving..."
+                          : "Make Captain"}
+                      </Button>
+                      <Button
+                        variant="primary"
+                        className="flex-1"
+                        onClick={doMakeViceCaptain}
+                        disabled={updatingTeamId === actionTeamId}
+                      >
+                        {updatingTeamId === actionTeamId
+                          ? "Saving..."
+                          : "Make V.Captain"}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="px-5 py-3 border-t flex justify-end">
+                    <Button variant="ghost" onClick={closeModals}>
+                      Close
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Replace Modal */}
+            {showReplaceModal && actionTeamId && actionPlayerId && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl">
+                  <div className="flex items-center justify-between px-5 py-3 border-b">
+                    <h3 className="font-semibold text-gray-900">
+                      Replace Player
+                    </h3>
+                    <button
+                      onClick={closeModals}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="p-5 max-h-[70vh] overflow-y-auto space-y-3">
+                    {(() => {
+                      const team = teams.find((t) => t.id === actionTeamId);
+                      const target = players.find(
+                        (p) => p.id === actionPlayerId
+                      );
+                      if (!team || !target)
+                        return (
+                          <div className="text-gray-500">
+                            No player selected.
+                          </div>
+                        );
+                      const sameSlotCandidates = players.filter(
+                        (p) =>
+                          p.slot === target.slot &&
+                          !team.player_ids.includes(p.id)
+                      );
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {sameSlotCandidates.map((p) => (
+                            <button
+                              key={p.id}
+                              onClick={() => confirmReplace(p.id)}
+                              className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 text-left"
+                            >
+                              <Avatar name={p.name} size="sm" />
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900">
+                                  {p.name}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {roleToSlotLabel(p.role || "")} • {p.team}
+                                </div>
+                              </div>
+                              <div className="text-right text-sm text-success-600">
+                                {Math.floor(p.points || 0)} pts
+                              </div>
+                            </button>
+                          ))}
+                          {sameSlotCandidates.length === 0 && (
+                            <div className="text-sm text-gray-500">
+                              No available players in this slot.
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  <div className="px-5 py-3 border-t flex justify-end">
+                    <Button variant="ghost" onClick={closeModals}>
+                      Close
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -718,13 +973,6 @@ export default function TeamsPage() {
                 >
                   + Create New Team
                 </Button>
-                {joinedContest && (
-                  <Link href={`/contests/${joinedContest.id}/leaderboard`} className="inline-flex">
-                    <Badge variant="success" className="whitespace-nowrap">
-                      Contest: {joinedContest.name}
-                    </Badge>
-                  </Link>
-                )}
               </div>
             </div>
 
@@ -783,13 +1031,22 @@ export default function TeamsPage() {
                               </Button>
                             </div>
 
-                    {/* Enrollment success banner */}
-                    {enrollSuccessByTeam[team.id] && (
-                      <div className="mb-3 p-3 rounded bg-green-50 border border-green-200 text-green-800 text-sm">
-                        Joined <span className="font-semibold">{enrollSuccessByTeam[team.id].contestName}</span>.{' '}
-                        <Link href={`/contests/${enrollSuccessByTeam[team.id].contestId}`} className="underline">View contest</Link>
-                      </div>
-                    )}
+                            {/* Enrollment success banner */}
+                            {enrollSuccessByTeam[team.id] && (
+                              <div className="mb-3 p-3 rounded bg-green-50 border border-green-200 text-green-800 text-sm">
+                                Joined{" "}
+                                <span className="font-semibold">
+                                  {enrollSuccessByTeam[team.id].contestName}
+                                </span>
+                                .{" "}
+                                <Link
+                                  href={`/contests/${enrollSuccessByTeam[team.id].contestId}`}
+                                  className="underline"
+                                >
+                                  View contest
+                                </Link>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <>
@@ -834,15 +1091,15 @@ export default function TeamsPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
-                        <Badge variant="success" className="text-xs sm:text-sm">
-                          {team.player_ids.length} Players
-                        </Badge>
-                        <Badge variant="primary" className="text-xs sm:text-sm">
-                          ₹{Math.floor(team.total_value)}M
-                        </Badge>
                         {contestIdParam && contestDataByTeam[team.id] && (
-                          <Badge variant="secondary" className="text-xs sm:text-sm">
-                            Contest Pts: {contestDataByTeam[team.id].contest_points.toFixed(0)}
+                          <Badge
+                            variant="secondary"
+                            className="text-xs sm:text-sm"
+                          >
+                            Contest Pts:{" "}
+                            {contestDataByTeam[team.id].contest_points.toFixed(
+                              0
+                            )}
                           </Badge>
                         )}
                         {team.total_points > 0 && (
@@ -862,20 +1119,30 @@ export default function TeamsPage() {
                           </Badge>
                         )}
                         {enrollmentByTeam[team.id] && (
-                          <Link href={`/contests/${enrollmentByTeam[team.id].contestId}/leaderboard`} className="inline-flex">
-                            <Badge variant="success" className="text-xs sm:text-sm">
+                          <Link
+                            href={`/contests/${enrollmentByTeam[team.id].contestId}/leaderboard`}
+                            className="inline-flex"
+                          >
+                            <Badge
+                              variant="success"
+                              className="text-xs sm:text-sm"
+                            >
                               Contest: {enrollmentByTeam[team.id].contestName}
                             </Badge>
                           </Link>
                         )}
-                        
                       </div>
                     </div>
+
+                    {/* Squad Heading */}
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                      Squad ({teamPlayers.length} players)
+                    </h4>
 
                     {/* Captain & Vice Captain */}
                     <div className="grid grid-cols-1 gap-3 mb-4">
                       {captain && (
-                        <div className="flex items-center gap-3 p-3 bg-warning-50 border border-warning-200 rounded-lg">
+                        <div className="flex items-center justify-between gap-3 p-3 bg-warning-50 border border-warning-200 rounded-lg">
                           <Avatar
                             name={captain.name}
                             src={captain.image}
@@ -898,14 +1165,25 @@ export default function TeamsPage() {
                               </Badge>
                             </div>
                             <p className="text-xs sm:text-sm text-gray-500 truncate mt-0.5">
-                              {roleToSlotLabel(captain.role || "")} • {captain.team}
+                              {roleToSlotLabel(captain.role || "")} •{" "}
+                              {captain.team}
                             </p>
+                          </div>
+                          <div className="text-right text-xs sm:text-sm font-medium text-success-700 whitespace-nowrap">
+                            {contestIdParam && contestDataByTeam[team.id]
+                              ? (() => {
+                                  const entry = contestDataByTeam[
+                                    team.id
+                                  ].players.find((p) => p.id === captain.id);
+                                  return `${Math.floor(entry?.contest_points || 0)} pts`;
+                                })()
+                              : `${Math.floor(captain.points || 0)} pts`}
                           </div>
                         </div>
                       )}
 
                       {viceCaptain && (
-                        <div className="flex items-center gap-3 p-3 bg-secondary-50 border border-secondary-200 rounded-lg">
+                        <div className="flex items-center justify-between gap-3 p-3 bg-secondary-50 border border-secondary-200 rounded-lg">
                           <Avatar
                             name={viceCaptain.name}
                             src={viceCaptain.image}
@@ -928,52 +1206,71 @@ export default function TeamsPage() {
                               </Badge>
                             </div>
                             <p className="text-xs sm:text-sm text-gray-500 truncate mt-0.5">
-                              {roleToSlotLabel(viceCaptain.role || "")} •{" "}
+                              {roleToSlotLabel(viceCaptain.role || "")} •
                               {viceCaptain.team}
                             </p>
+                          </div>
+                          <div className="text-right text-xs sm:text-sm font-medium text-success-700 whitespace-nowrap">
+                            {contestIdParam && contestDataByTeam[team.id]
+                              ? (() => {
+                                  const entry = contestDataByTeam[
+                                    team.id
+                                  ].players.find(
+                                    (p) => p.id === viceCaptain.id
+                                  );
+                                  return `${Math.floor(entry?.contest_points || 0)} pts`;
+                                })()
+                              : `${Math.floor(viceCaptain.points || 0)} pts`}
                           </div>
                         </div>
                       )}
                     </div>
 
-                    {/* Player List */}
+                    {/* Player List (exclude C/VC) */}
                     <div>
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                        Squad ({teamPlayers.length} players)
-                      </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {teamPlayers.map((player) => (
-                          <div
-                            key={player.id}
-                            className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                            onClick={() => openPlayerActions(team.id, player.id)}
-                          >
-                            <Avatar
-                              name={player.name}
-                              src={player.image}
-                              size="sm"
-                              gradientClassName={getRoleAvatarGradient(
-                                player.role || ""
-                              )}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                                {player.name}
-                              </p>
-                              <p className="text-xs text-gray-500 truncate">
-                                {player.team}
-                              </p>
+                        {teamPlayers
+                          .filter(
+                            (player) =>
+                              player.id !== (team.captain_id || "") &&
+                              player.id !== (team.vice_captain_id || "")
+                          )
+                          .map((player) => (
+                            <div
+                              key={player.id}
+                              className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                              onClick={() =>
+                                openPlayerActions(team.id, player.id)
+                              }
+                            >
+                              <Avatar
+                                name={player.name}
+                                src={player.image}
+                                size="sm"
+                                gradientClassName={getRoleAvatarGradient(
+                                  player.role || ""
+                                )}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                  {player.name}
+                                </p>
+                                <p className="text-xs text-gray-500 truncate">
+                                  {player.team}
+                                </p>
+                              </div>
+                              <div className="text-right text-xs sm:text-sm font-medium text-success-600 whitespace-nowrap">
+                                {contestIdParam && contestDataByTeam[team.id]
+                                  ? (() => {
+                                      const entry = contestDataByTeam[
+                                        team.id
+                                      ].players.find((p) => p.id === player.id);
+                                      return `${Math.floor(entry?.contest_points || 0)} pts`;
+                                    })()
+                                  : `${Math.floor(player.points || 0)} pts`}
+                              </div>
                             </div>
-                            <div className="text-right text-xs sm:text-sm font-medium text-success-600 whitespace-nowrap">
-                              {contestIdParam && contestDataByTeam[team.id]
-                                ? (() => {
-                                    const entry = contestDataByTeam[team.id].players.find((p) => p.id === player.id);
-                                    return `${Math.floor(entry?.contest_points || 0)} pts`;
-                                  })()
-                                : `${Math.floor(player.points || 0)} pts`}
-                            </div>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     </div>
 
@@ -1008,17 +1305,48 @@ export default function TeamsPage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between px-5 py-3 border-b">
               <h3 className="font-semibold text-gray-900">Player Actions</h3>
-              <button onClick={closeModals} className="text-gray-500 hover:text-gray-700">✕</button>
+              <button
+                onClick={closeModals}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
             </div>
             <div className="p-5 space-y-3">
-              <Button variant="secondary" className="w-full" onClick={openReplace}>Replace Player</Button>
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={openReplace}
+              >
+                Replace Player
+              </Button>
               <div className="flex gap-2">
-                <Button variant="primary" className="flex-1" onClick={doMakeCaptain} disabled={updatingTeamId === actionTeamId}>{updatingTeamId === actionTeamId ? "Saving..." : "Make Captain"}</Button>
-                <Button variant="primary" className="flex-1" onClick={doMakeViceCaptain} disabled={updatingTeamId === actionTeamId}>{updatingTeamId === actionTeamId ? "Saving..." : "Make V.Captain"}</Button>
+                <Button
+                  variant="primary"
+                  className="flex-1"
+                  onClick={doMakeCaptain}
+                  disabled={updatingTeamId === actionTeamId}
+                >
+                  {updatingTeamId === actionTeamId
+                    ? "Saving..."
+                    : "Make Captain"}
+                </Button>
+                <Button
+                  variant="primary"
+                  className="flex-1"
+                  onClick={doMakeViceCaptain}
+                  disabled={updatingTeamId === actionTeamId}
+                >
+                  {updatingTeamId === actionTeamId
+                    ? "Saving..."
+                    : "Make V.Captain"}
+                </Button>
               </div>
             </div>
             <div className="px-5 py-3 border-t flex justify-end">
-              <Button variant="ghost" onClick={closeModals}>Close</Button>
+              <Button variant="ghost" onClick={closeModals}>
+                Close
+              </Button>
             </div>
           </div>
         </div>
@@ -1039,7 +1367,6 @@ export default function TeamsPage() {
         excludeIds={[]}
         onSelect={confirmReplace}
       />
-
     </div>
   );
 }
