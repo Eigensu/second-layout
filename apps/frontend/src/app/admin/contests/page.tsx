@@ -18,7 +18,7 @@ export default function AdminContestsPage() {
     end_at: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
     visibility: "public",
     points_scope: "time_window",
-    status: "draft",
+    status: "upcoming",
     contest_type: "full",
     allowed_teams: [],
   });
@@ -142,9 +142,8 @@ export default function AdminContestsPage() {
             <div>
               <label className="block text-sm">Status</label>
               <select className="w-full border p-2 rounded" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as any })}>
-                <option value="draft">draft</option>
-                <option value="active">active</option>
-                <option value="paused">paused</option>
+                <option value="upcoming">upcoming</option>
+                <option value="live">live</option>
                 <option value="completed">completed</option>
                 <option value="archived">archived</option>
               </select>

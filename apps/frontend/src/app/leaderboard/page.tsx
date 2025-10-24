@@ -32,13 +32,18 @@ export default function LeaderboardIndexPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50 to-gray-50">
-      <PillNavbar activeId="leaderboard" mobileMenuContent={isAuthenticated ? <MobileUserMenu /> : undefined} />
+      <PillNavbar
+        activeId="leaderboard"
+        mobileMenuContent={isAuthenticated ? <MobileUserMenu /> : undefined}
+      />
       <div className="h-20" />
 
       <div className="max-w-5xl mx-auto p-4">
         <div className="flex items-center justify-center gap-3 mb-6">
           <Trophy className="w-7 h-7 text-primary-600" />
-          <h1 className="text-3xl font-extrabold bg-gradient-to-r from-primary-400 to-primary-700 bg-clip-text text-transparent">Leaderboards</h1>
+          <h1 className="text-3xl font-extrabold bg-gradient-to-r from-primary-400 to-primary-700 bg-clip-text text-transparent">
+            Leaderboards
+          </h1>
         </div>
 
         {loading && <div>Loading...</div>}
@@ -59,17 +64,18 @@ export default function LeaderboardIndexPage() {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-gray-900 truncate">{c.name}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                    c.status === "active"
+                    c.status === "live"
                       ? "bg-green-50 text-green-700 border-green-200"
                       : c.status === "completed"
                       ? "bg-gray-50 text-gray-700 border-gray-200"
-                      : c.status === "paused"
+                      : c.status === "archived"
                       ? "bg-amber-50 text-amber-700 border-amber-200"
                       : "bg-blue-50 text-blue-700 border-blue-200"
                   }`}>{c.status}</span>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  {new Date(c.start_at).toLocaleDateString()} - {new Date(c.end_at).toLocaleDateString()}
+                  {new Date(c.start_at).toLocaleDateString()} -{" "}
+                  {new Date(c.end_at).toLocaleDateString()}
                 </p>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />

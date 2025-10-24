@@ -35,7 +35,7 @@ export default function AdminManageContestPage() {
   const toggleContestStatus = async () => {
     if (!contest) return;
     const current = contest.status;
-    const next = current === "active" ? "paused" : "active";
+    const next = current === "live" ? "upcoming" : "live";
     try {
       setToggling(true);
       const updated = await adminContestsApi.update(contest.id, { status: next });
@@ -133,15 +133,19 @@ export default function AdminManageContestPage() {
         {contest && (
           <div className="border rounded p-4">
             <div className="text-xl font-medium">{contest.name}</div>
-            <div className="text-sm text-gray-600">{contest.code} · {contest.status} · {contest.visibility} · {contest.contest_type}</div>
+            <div className="text-sm text-gray-600">{contest.code} · {contest.status === 'live' ? 'closed' : contest.status === 'upcoming' ? 'open' : contest.status} · {contest.visibility} · {contest.contest_type}</div>
             <div className="mt-2">
               <button
-                className={`px-3 py-1 rounded border text-sm ${contest.status === 'active' ? 'text-red-700 border-red-300' : 'text-green-700 border-green-300'}`}
+                className={`px-3 py-1 rounded border text-sm ${contest.status === 'live' ? 'text-green-700 border-green-300' : 'text-red-700 border-red-300'}`}
                 onClick={toggleContestStatus}
                 disabled={toggling}
                 title="Toggle contest ON/OFF"
               >
-                {toggling ? 'Toggling...' : contest.status === 'active' ? 'Turn OFF (Pause)' : 'Turn ON (Activate)'}
+                {toggling
+                  ? 'Toggling...'
+                  : contest.status === 'live'
+                  ? 'Set Upcoming (Open)'
+                  : 'Set Live (Close)'}
               </button>
             </div>
             <div className="text-sm text-gray-700 mt-1">{new Date(contest.start_at).toLocaleString()} – {new Date(contest.end_at).toLocaleString()}</div>

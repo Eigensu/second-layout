@@ -52,15 +52,10 @@ export default function ContestsPage() {
     router.push(target);
   };
 
-  // Partition contests into active (started and not ended) and upcoming (not started yet)
-  const now = new Date();
-  const activeContests = contests.filter((c) => {
-    const s = new Date(c.start_at);
-    const e = new Date(c.end_at);
-    return c.status === "active" && s <= now && e > now;
-  });
+  // Partition contests using status values
+  const activeContests = contests.filter((c) => c.status === "live");
   const upcomingContests = contests
-    .filter((c) => new Date(c.start_at) > now)
+    .filter((c) => c.status === "upcoming")
     .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime());
 
   return (
