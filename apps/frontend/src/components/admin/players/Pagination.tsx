@@ -19,22 +19,25 @@ export function Pagination({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="px-6 py-4 border-t border-gray-200">
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-500">
+    <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="text-xs sm:text-sm text-gray-500">
           Showing {(currentPage - 1) * pageSize + 1} to{" "}
           {Math.min(currentPage * pageSize, totalItems)} of {totalItems} players
+          <span className="inline sm:hidden"> · Page {currentPage} of {totalPages}</span>
         </div>
-        <div className="flex gap-2">
+        <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
           <Button
             variant="outline"
             size="sm"
+            className="w-full sm:w-auto"
             onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
           >
             Previous
           </Button>
-          <div className="flex items-center gap-1">
+          {/* Number buttons hidden on small screens for compactness */}
+          <div className="hidden sm:flex items-center gap-1">
             {Array.from({ length: totalPages }, (_, i) => i + 1)
               .filter(
                 (p) =>
@@ -61,6 +64,7 @@ export function Pagination({
           <Button
             variant="outline"
             size="sm"
+            className="w-full sm:w-auto"
             onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
           >

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PlayersSection } from "./players/PlayersSection";
-import { TeamsEditSection } from "./players/TeamsEditSection";
+import { TeamsEditSection } from "./points/TeamsEditSection";
 import { SponsorsSection } from "./sponsors/SponsorsSection";
 import { ContestsSection } from "./contests/ContestsSection";
 import { SlotsSection } from "./slots/SlotsSection";
@@ -47,10 +47,10 @@ export function AdminLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Admin Dashboard
               </h1>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-gray-600 hidden sm:block">
                 Manage players, sponsors, contests, and slots
               </p>
             </div>
@@ -64,47 +64,62 @@ export function AdminLayout() {
           </div>
         </div>
       </div>
-
-      {/* Navigation Tabs */}
+      {/* Navigation (mobile select + desktop tabs) */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-          {/* Segmented control */}
-          <div className="relative overflow-x-auto">
-            <div
-              role="tablist"
-              aria-label="Admin sections"
-              className="flex items-center gap-2 rounded-xl bg-gray-50/80 p-1 border border-gray-200 shadow-inner backdrop-blur supports-[backdrop-filter]:bg-gray-50/60"
+          {/* Mobile: compact section selector */}
+          <div className="block sm:hidden">
+            <label htmlFor="admin-section" className="sr-only">Select section</label>
+            <select
+              id="admin-section"
+              value={activeSection}
+              onChange={(e) => setActiveSection(e.target.value as Section)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
             >
-              {sections.map(({ id, label, icon: Icon }) => {
-                const isActive = activeSection === id;
-                return (
-                  <button
-                    key={id}
-                    role="tab"
-                    aria-selected={isActive}
-                    aria-controls={`panel-${id}`}
-                    onClick={() => setActiveSection(id)}
-                    className={`group flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
-                      isActive
-                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow"
-                        : "text-gray-700 hover:text-gray-900 hover:bg-white"
-                    }`}
-                  >
-                    <Icon
-                      className={`w-4 h-4 transition-colors ${
-                        isActive ? "text-white" : "text-gray-500 group-hover:text-gray-700"
+              {sections.map(({ id, label }) => (
+                <option key={id} value={id}>{label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Desktop: segmented control tabs */}
+          <div className="hidden sm:block">
+            <div className="relative overflow-x-auto">
+              <div
+                role="tablist"
+                aria-label="Admin sections"
+                className="flex items-center gap-2 rounded-xl bg-gray-50/80 p-1 border border-gray-200 shadow-inner backdrop-blur supports-[backdrop-filter]:bg-gray-50/60"
+              >
+                {sections.map(({ id, label, icon: Icon }) => {
+                  const isActive = activeSection === id;
+                  return (
+                    <button
+                      key={id}
+                      role="tab"
+                      aria-selected={isActive}
+                      aria-controls={`panel-${id}`}
+                      onClick={() => setActiveSection(id)}
+                      className={`group flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+                        isActive
+                          ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-white"
                       }`}
-                    />
-                    {label}
-                  </button>
-                );
-              })}
+                    >
+                      <Icon
+                        className={`w-4 h-4 transition-colors ${
+                          isActive ? "text-white" : "text-gray-500 group-hover:text-gray-700"
+                        }`}
+                      />
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {renderSection()}
       </div>
