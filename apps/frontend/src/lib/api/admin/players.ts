@@ -4,7 +4,6 @@ export interface Player {
   id: string;
   name: string;
   team: string;
-  role: string;
   points: number;
   status: string;
   price: number;
@@ -18,7 +17,6 @@ export interface Player {
 export interface PlayerCreate {
   name: string;
   team: string;
-  role: string;
   points?: number;
   status?: string;
   price?: number;
@@ -30,7 +28,6 @@ export interface PlayerCreate {
 export interface PlayerUpdate {
   name?: string;
   team?: string;
-  role?: string;
   points?: number;
   status?: string;
   price?: number;
@@ -50,7 +47,6 @@ export interface GetPlayersParams {
   page?: number;
   page_size?: number;
   search?: string;
-  role?: string;
   status?: string;
   sort_by?: string;
   sort_order?: 'asc' | 'desc';

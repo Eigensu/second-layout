@@ -57,7 +57,6 @@ export interface ContestTeamPlayer {
   id: string;
   name: string;
   team?: string | null;
-  role?: string | null;
   price: number;
   base_points: number;
   contest_points: number;

@@ -4,7 +4,6 @@ export type ApiPlayer = {
   id: string;
   name: string;
   team?: string;
-  role?: string;
   price: number;
   slot: string | null; // Slot ObjectId
   points?: number;

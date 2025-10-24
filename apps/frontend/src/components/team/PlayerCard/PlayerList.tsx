@@ -2,7 +2,6 @@ import * as React from "react";
 import { PlayerCard } from "./PlayerCard";
 import { SearchInput } from "./SearchInput";
 import { Pagination } from "./Pagination";
-import { normalizeRole, ROLE_ORDER } from "./utils";
 import type { PlayerListProps } from "./types";
 
 const PLAYERS_PER_PAGE = 10;
@@ -16,49 +15,25 @@ export const PlayerList: React.FC<PlayerListProps> = ({
   onSetCaptain,
   onSetViceCaptain,
   maxSelections = 16,
-  roleLimits,
-  filterRole,
   filterSlot,
-  sortByRole = true,
   onBlockedSelect,
   showActions = false,
   compact = false,
   className = "",
-  displayRoleMap,
   compactShowPrice = false,
   isPlayerDisabled,
 }) => {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
 
-  // Build a map from playerId to normalized role for quick lookup
-  const idToRole = React.useMemo(() => {
-    const m = new Map<string, string>();
-    players.forEach((p) => m.set(p.id, normalizeRole(p.role)));
-    return m;
-  }, [players]);
-
-  // Count selected per role
-  const selectedCountByRole = React.useMemo(() => {
-    const counts: Record<string, number> = {};
-    selectedPlayers.forEach((id) => {
-      const role = idToRole.get(id);
-      if (!role) return;
-      counts[role] = (counts[role] || 0) + 1;
-    });
-    return counts;
-  }, [selectedPlayers, idToRole]);
-
   const canSelectMoreTotal = selectedPlayers.length < maxSelections;
 
   const playersPrepared = React.useMemo(() => {
     let list = players.slice();
 
-    // Apply slot/role filter
+    // Apply slot filter
     if (typeof filterSlot === "number") {
-      list = list.filter((p) => (p as any).slot === filterSlot);
-    } else if (filterRole && filterRole !== "All") {
-      list = list.filter((p) => normalizeRole(p.role) === filterRole);
+      list = list.filter((p: any) => p.slot === filterSlot);
     }
 
     // Apply search filter
@@ -67,27 +42,16 @@ export const PlayerList: React.FC<PlayerListProps> = ({
       list = list.filter(
         (p) =>
           p.name.toLowerCase().includes(query) ||
-          p.team.toLowerCase().includes(query) ||
-          normalizeRole(p.role).toLowerCase().includes(query)
+          p.team.toLowerCase().includes(query)
       );
     }
-
-    // Sort by role if needed
-    if (sortByRole) {
-      list.sort((a, b) => {
-        const ar = ROLE_ORDER.indexOf(normalizeRole(a.role));
-        const br = ROLE_ORDER.indexOf(normalizeRole(b.role));
-        return ar - br;
-      });
-    }
-
     return list;
-  }, [players, filterRole, filterSlot, sortByRole, searchQuery]);
+  }, [players, filterSlot, searchQuery]);
 
   // Reset to page 1 when search or filters change
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, filterSlot, filterRole]);
+  }, [searchQuery, filterSlot]);
 
   // Calculate pagination
   const totalPlayers = playersPrepared.length;
@@ -97,36 +61,14 @@ export const PlayerList: React.FC<PlayerListProps> = ({
   const paginatedPlayers = playersPrepared.slice(startIndex, endIndex);
 
   const handleSelect = (playerId: string) => {
-    const isAlreadySelected = selectedPlayers.includes(playerId);
-    if (isAlreadySelected) {
-      onPlayerSelect(playerId); // toggle off
-      return;
-    }
-
+    const already = selectedPlayers.includes(playerId);
+    if (already) return onPlayerSelect(playerId);
     if (!canSelectMoreTotal) {
       onBlockedSelect?.(
         `You can select at most ${maxSelections} players in total.`
       );
       return;
     }
-
-    // Enforce per-role limits if provided
-    if (roleLimits) {
-      const role = idToRole.get(playerId);
-      if (role) {
-        const limit = roleLimits[role];
-        if (typeof limit === "number") {
-          const current = selectedCountByRole[role] || 0;
-          if (current >= limit) {
-            onBlockedSelect?.(
-              `You can select at most ${limit} players for ${role}.`
-            );
-            return;
-          }
-        }
-      }
-    }
-
     onPlayerSelect(playerId);
   };
 
@@ -156,7 +98,6 @@ export const PlayerList: React.FC<PlayerListProps> = ({
               onSetViceCaptain={onSetViceCaptain}
               showActions={showActions}
               compact={compact}
-              displayRoleMap={displayRoleMap}
               compactShowPrice={compactShowPrice}
               disabled={isPlayerDisabled ? isPlayerDisabled(player) : false}
             />

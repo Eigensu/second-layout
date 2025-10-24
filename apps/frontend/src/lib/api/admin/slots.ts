@@ -1,4 +1,4 @@
-import apiClient from '../client';
+import apiClient from "../client";
 
 export interface Slot {
   id: string;
@@ -43,14 +43,13 @@ export interface GetSlotsParams {
   search?: string;
   category?: string;
   sort_by?: string;
-  sort_order?: 'asc' | 'desc';
+  sort_order?: "asc" | "desc";
 }
 
 export interface PlayerSummary {
   id: string;
   name: string;
   team: string;
-  role: string;
   points: number;
   status: string;
   price: number;
@@ -77,7 +76,7 @@ export const slotsApi = {
    * Get all slots with pagination and filters
    */
   getSlots: async (params?: GetSlotsParams): Promise<SlotListResponse> => {
-    const response = await apiClient.get('/api/admin/slots', { params });
+    const response = await apiClient.get("/api/admin/slots", { params });
     return response.data;
   },
 
@@ -93,7 +92,7 @@ export const slotsApi = {
    * Create a new slot
    */
   createSlot: async (data: SlotCreate): Promise<Slot> => {
-    const response = await apiClient.post('/api/admin/slots', data);
+    const response = await apiClient.post("/api/admin/slots", data);
     return response.data;
   },
 
@@ -108,40 +107,72 @@ export const slotsApi = {
   /**
    * Delete a slot (optionally force to unassign players first)
    */
-  deleteSlot: async (id: string, force?: boolean): Promise<{ message?: string; unassigned_players?: number } | void> => {
-    const response = await apiClient.delete(`/api/admin/slots/${id}`, { params: force ? { force: true } : undefined });
+  deleteSlot: async (
+    id: string,
+    force?: boolean
+  ): Promise<{ message?: string; unassigned_players?: number } | void> => {
+    const response = await apiClient.delete(`/api/admin/slots/${id}`, {
+      params: force ? { force: true } : undefined,
+    });
     return response.data;
   },
 
   /**
    * Get players assigned to a slot
    */
-  getSlotPlayers: async (id: string, params?: { page?: number; page_size?: number; search?: string; team?: string; role?: string; }): Promise<SlotPlayersResponse> => {
-    const response = await apiClient.get(`/api/admin/slots/${id}/players`, { params });
+  getSlotPlayers: async (
+    id: string,
+    params?: {
+      page?: number;
+      page_size?: number;
+      search?: string;
+      team?: string;
+      role?: string;
+    }
+  ): Promise<SlotPlayersResponse> => {
+    const response = await apiClient.get(`/api/admin/slots/${id}/players`, {
+      params,
+    });
     return response.data;
   },
 
   /**
    * Assign players to a slot
    */
-  assignPlayers: async (id: string, body: PlayerIdsBody): Promise<{ assigned: number }> => {
-    const response = await apiClient.post(`/api/admin/slots/${id}/players`, body);
+  assignPlayers: async (
+    id: string,
+    body: PlayerIdsBody
+  ): Promise<{ assigned: number }> => {
+    const response = await apiClient.post(
+      `/api/admin/slots/${id}/players`,
+      body
+    );
     return response.data;
   },
 
   /**
    * Unassign a single player from a slot
    */
-  unassignPlayer: async (id: string, playerId: string): Promise<{ unassigned: number }> => {
-    const response = await apiClient.delete(`/api/admin/slots/${id}/players/${playerId}`);
+  unassignPlayer: async (
+    id: string,
+    playerId: string
+  ): Promise<{ unassigned: number }> => {
+    const response = await apiClient.delete(
+      `/api/admin/slots/${id}/players/${playerId}`
+    );
     return response.data;
   },
 
   /**
    * Bulk unassign players from a slot
    */
-  bulkUnassignPlayers: async (id: string, body: PlayerIdsBody): Promise<{ unassigned: number }> => {
-    const response = await apiClient.delete(`/api/admin/slots/${id}/players`, { data: body });
+  bulkUnassignPlayers: async (
+    id: string,
+    body: PlayerIdsBody
+  ): Promise<{ unassigned: number }> => {
+    const response = await apiClient.delete(`/api/admin/slots/${id}/players`, {
+      data: body,
+    });
     return response.data;
   },
 };

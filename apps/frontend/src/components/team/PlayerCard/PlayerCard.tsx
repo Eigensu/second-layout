@@ -16,40 +16,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   showActions = false,
   compact = false,
   className = "",
-  displayRoleMap,
   compactShowPrice = false,
   disabled = false,
 }) => {
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role.toLowerCase()) {
-      case "batsman":
-      case "batsmen":
-        return "success";
-      case "bowler":
-        return "error";
-      case "all-rounder":
-      case "allrounder":
-        return "primary";
-      case "wicket-keeper":
-      case "wicketkeeper":
-        return "warning";
-      default:
-        return "neutral";
-    }
-  };
-
-  const getRoleAvatarGradient = (role: string) => {
-    const r = role.toLowerCase();
-    // Batsman: switch to amber-yellow to avoid matching primary button gradient
-    if (r === "batsman" || r === "batsmen")
-      return "bg-gradient-to-br from-amber-400 to-yellow-600";
-    if (r === "bowler") return "bg-gradient-to-br from-blue-500 to-indigo-600";
-    if (r === "all-rounder" || r === "allrounder")
-      return "bg-gradient-to-br from-emerald-400 to-teal-600";
-    if (r === "wicket-keeper" || r === "wicketkeeper")
-      return "bg-gradient-to-br from-purple-500 to-pink-600";
-    return undefined;
-  };
+  // Visual accent based on team initial; simple deterministic color
+  const getAvatarGradient = () => undefined;
 
   if (compact) {
     return (
@@ -72,7 +43,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           name={player.name}
           src={player.image}
           size="md"
-          gradientClassName={getRoleAvatarGradient(player.role)}
+          gradientClassName={getAvatarGradient()}
         />
 
         {/* Player Info */}
@@ -97,6 +68,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               </svg>
               {player.team}
             </span>
+            {player.slotLabel && (
+              <Badge variant="secondary" size="sm">{player.slotLabel}</Badge>
+            )}
           </div>
         </div>
 
@@ -185,7 +159,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               name={player.name}
               src={player.image}
               size="md"
-              gradientClassName={getRoleAvatarGradient(player.role)}
+              gradientClassName={getAvatarGradient()}
             />
 
             <div>
@@ -193,13 +167,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
                 {player.name}
               </h4>
               <div className="flex items-center space-x-1.5 sm:space-x-2 mt-0.5 sm:mt-1">
-                <Badge
-                  variant={getRoleBadgeVariant(player.role)}
-                  size="sm"
-                  className="text-[10px] sm:text-xs px-1 sm:px-2 py-0 sm:py-0.5"
-                >
-                  {displayRoleMap ? displayRoleMap(player.role) : player.role}
-                </Badge>
+                {player.slotLabel && (
+                  <Badge size="sm" className="text-[10px] sm:text-xs px-1 sm:px-2 py-0 sm:py-0.5">
+                    {player.slotLabel}
+                  </Badge>
+                )}
                 <span className="text-xs sm:text-sm text-gray-500">
                   {player.team}
                 </span>

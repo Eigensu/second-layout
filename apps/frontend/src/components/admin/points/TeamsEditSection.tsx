@@ -203,9 +203,6 @@ export function TeamsEditSection() {
                           <th className="px-3 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Player
                           </th>
-                          <th className="px-3 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                            Role
-                          </th>
                           <th className="px-3 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Points
                           </th>
@@ -219,9 +216,6 @@ export function TeamsEditSection() {
                           <tr key={p.id} className="hover:bg-gray-50">
                             <td className="px-3 sm:px-4 py-3 text-sm text-gray-900">
                               {p.name}
-                            </td>
-                            <td className="px-3 sm:px-4 py-3 text-sm text-gray-600 hidden sm:table-cell">
-                              {p.role}
                             </td>
                             <td className="px-3 sm:px-4 py-3 text-sm font-semibold text-gray-900">
                               {(p.points ?? 0).toFixed(1)}

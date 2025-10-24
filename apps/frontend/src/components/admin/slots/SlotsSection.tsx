@@ -214,7 +214,6 @@ export function SlotsSection() {
           id: p.id,
           name: p.name,
           team: p.team,
-          role: p.role,
           points: p.points,
           status: p.status,
           price: p.price,
@@ -722,7 +721,7 @@ export function SlotsSection() {
                               {p.name}
                             </span>
                             <span className="ml-auto text-xs text-gray-500">
-                              {p.team} • {p.role}
+                              {p.team}
                             </span>
                           </label>
                         ))
@@ -785,7 +784,7 @@ export function SlotsSection() {
                               {p.name}
                             </span>
                             <span className="ml-auto text-xs text-gray-500">
-                              {p.team} • {p.role}
+                              {p.team}
                             </span>
                           </label>
                         ))
