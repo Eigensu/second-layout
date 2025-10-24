@@ -6,7 +6,6 @@ class PlayerOut(BaseModel):
     id: str = Field(..., description="Mongo ObjectId as string")
     name: str
     team: Optional[str] = None
-    role: Optional[str] = None
     price: float | int = 0
     slot: Optional[str] = Field(default=None, description="Slot ObjectId as string")
     points: float | int = 0
@@ -24,7 +23,6 @@ class PlayerOut(BaseModel):
                 "id": "68e29ab234bf368cda47fce9",
                 "name": "Ankit shah",
                 "team": "DV SPARTANS",
-                "role": "User",
                 "price": 1000,
                 "slot": "68ee8700639d27155ccbc1c1",
                 "points": 0,

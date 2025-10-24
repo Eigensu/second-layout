@@ -266,7 +266,6 @@ async def get_slot_players(
     page_size: int = Query(10, ge=1, le=100),
     search: Optional[str] = Query(None),
     team: Optional[str] = Query(None),
-    role: Optional[str] = Query(None),
     current_user: User = Depends(get_admin_user),
 ):
     slot = await Slot.get(slot_id)
@@ -278,8 +277,6 @@ async def get_slot_players(
         conditions.append(RegEx(AdminPlayer.name, search, options="i"))
     if team:
         conditions.append(AdminPlayer.team == team)
-    if role:
-        conditions.append(AdminPlayer.role == role)
 
     query = AdminPlayer.find(And(*conditions)) if len(conditions) > 1 else AdminPlayer.find(AdminPlayer.slot == slot_id)
     total = await query.count()
@@ -292,7 +289,6 @@ async def get_slot_players(
                 id=str(p.id),
                 name=p.name,
                 team=p.team,
-                role=p.role,
                 points=p.points,
                 status=p.status,
                 price=p.price,

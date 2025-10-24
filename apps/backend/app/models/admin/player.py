@@ -9,7 +9,6 @@ class Player(Document):
 
     name: Indexed(str)  # type: ignore
     team: str
-    role: str  # Batsman, Bowler, All-Rounder, Wicket-Keeper
     points: float = 0.0
     status: str = "Active"  # Active, Inactive, Injured
     price: float = 8.0  # Player price for fantasy selection
@@ -34,7 +33,6 @@ class Player(Document):
         indexes = [
             "name",
             "team",
-            "role",
             "slot",
             [("points", -1)],
             [("price", 1)],

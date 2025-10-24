@@ -13,7 +13,6 @@ def serialize_player(player: Player) -> PlayerOut:
         id=str(player.id),
         name=player.name,
         team=player.team,
-        role=player.role,
         price=player.price,
         slot=player.slot,
         points=player.points,

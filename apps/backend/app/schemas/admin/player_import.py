@@ -8,7 +8,6 @@ class ImportOptions(BaseModel):
     dry_run: bool = True
     conflict: str = Field(default="skip", pattern="^(skip|update|error)$")
     slot_strategy: str = Field(default="lookup", pattern="^(lookup|create|ignore)$")
-    role_normalize: str = Field(default="loose", pattern="^(strict|loose)$")
     header_row: int = Field(default=1, ge=1)
 
 

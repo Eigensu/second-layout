@@ -9,7 +9,6 @@ class Player(Document):
     
     name: str
     team: Optional[str] = None
-    role: Optional[str] = None  # Batsman, Bowler, All-Rounder, Wicket-Keeper
     price: float = 0.0
     slot: Optional[str] = None  # Slot ObjectId string
     points: float = 0.0
@@ -38,7 +37,6 @@ class Player(Document):
         indexes = [
             "name",
             "team",
-            "role",
             "slot",
             [("points", -1)],  # Descending order for leaderboard
             [("price", 1)],

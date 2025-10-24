@@ -16,7 +16,7 @@ from app.schemas.admin.player import (
 from app.utils.dependencies import get_admin_user
 from app.models.user import User
 
-router = APIRouter(prefix="/api/admin/players", tags=["Admin - Players"])
+router = APIRouter(prefix="/api/admin/players", tags=["Admin - Players"]) 
 
 
 @router.get("", response_model=PlayerListResponse)
@@ -24,7 +24,6 @@ async def get_players(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(10, ge=1, le=100, description="Items per page"),
     search: Optional[str] = Query(None, description="Search by name or team"),
-    role: Optional[str] = Query(None, description="Filter by role"),
     status: Optional[str] = Query(None, description="Filter by status"),
     sort_by: str = Query("created_at", description="Sort field"),
     sort_order: str = Query("desc", description="Sort order (asc/desc)"),
@@ -44,9 +43,6 @@ async def get_players(
                 RegEx(Player.team, search, options="i"),
             )
         )
-    
-    if role:
-        query_conditions.append(Player.role == role)
     
     if status:
         query_conditions.append(Player.status == status)
@@ -74,7 +70,6 @@ async def get_players(
             id=str(player.id),
             name=player.name,
             team=player.team,
-            role=player.role,
             points=player.points,
             status=player.status,
             price=player.price,
@@ -113,7 +108,6 @@ async def get_player(
         id=str(player.id),
         name=player.name,
         team=player.team,
-        role=player.role,
         points=player.points,
         status=player.status,
         price=player.price,
@@ -146,7 +140,6 @@ async def create_player(
     player = Player(
         name=player_data.name,
         team=player_data.team,
-        role=player_data.role,
         points=player_data.points,
         status=player_data.status,
         price=player_data.price,
@@ -163,7 +156,6 @@ async def create_player(
         id=str(player.id),
         name=player.name,
         team=player.team,
-        role=player.role,
         points=player.points,
         status=player.status,
         price=player.price,
@@ -239,7 +231,6 @@ async def update_player(
         id=str(player.id),
         name=player.name,
         team=player.team,
-        role=player.role,
         points=player.points,
         status=player.status,
         price=player.price,

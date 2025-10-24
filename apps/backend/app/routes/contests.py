@@ -28,7 +28,6 @@ class ContestTeamPlayerSchema(BaseModel):
     id: str
     name: str
     team: Optional[str] = None
-    role: Optional[str] = None
     price: float = 0.0
     base_points: float = 0.0
     contest_points: float = 0.0
@@ -405,7 +404,6 @@ async def get_team_in_contest(contest_id: str, team_id: str, current_user: User 
             id=pid,
             name=p.name,
             team=p.team,
-            role=p.role,
             price=float(p.price or 0.0),
             base_points=base,
             contest_points=cur - base,
