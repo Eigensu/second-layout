@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { ExternalLink, Award } from "lucide-react";
 import Image from "next/image";
+import { getSponsorLogo } from "@/components/sponsors/assets";
+import { useState } from "react";
 
 export interface Sponsor {
   id: string;
@@ -17,49 +19,35 @@ interface SponsorCardProps {
   featured?: boolean;
 }
 
-const tierColors = {
-  platinum: {
-    gradient: "from-slate-300 via-slate-400 to-slate-500",
-    bg: "bg-gradient-to-br from-slate-50 to-slate-100",
-    badge: "bg-gradient-to-r from-slate-400 to-slate-600",
-    ring: "ring-slate-300",
-  },
-  gold: {
-    gradient: "from-yellow-300 via-yellow-400 to-yellow-500",
-    bg: "bg-gradient-to-br from-yellow-50 to-yellow-100",
-    badge: "bg-gradient-to-r from-yellow-400 to-yellow-600",
-    ring: "ring-yellow-300",
-  },
-  silver: {
-    gradient: "from-gray-300 via-gray-400 to-gray-500",
-    bg: "bg-gradient-to-br from-gray-50 to-gray-100",
-    badge: "bg-gradient-to-r from-gray-400 to-gray-600",
-    ring: "ring-gray-300",
-  },
-  bronze: {
-    gradient: "from-amber-600 via-amber-700 to-amber-800",
-    bg: "bg-gradient-to-br from-amber-50 to-amber-100",
-    badge: "bg-gradient-to-r from-amber-600 to-amber-800",
-    ring: "ring-amber-300",
-  },
+const cardTheme = {
+  gradient: "from-primary-300 via-primary-400 to-primary-500",
+  bg: "bg-gradient-to-br from-primary-50 to-primary-100",
+  badge: "bg-gradient-to-r from-primary-500 to-primary-700",
+  ring: "ring-primary-300",
 };
 
 export function SponsorCard({ sponsor, featured = false }: SponsorCardProps) {
-  const tierColor = tierColors[sponsor.tier];
+  const localLogo = getSponsorLogo({
+    id: sponsor.id,
+    name: sponsor.name,
+    description: sponsor.description,
+  });
+  const displayLogo = localLogo ?? sponsor.logo;
+  const [imgSrc, setImgSrc] = useState(displayLogo);
 
   return (
     <motion.div
       whileHover={{ y: -5, scale: 1.02 }}
       transition={{ duration: 0.2 }}
       className={`relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 ${
-        featured ? "ring-2 " + tierColor.ring : "border border-gray-200"
+        featured ? "ring-2 " + cardTheme.ring : "border border-gray-200"
       }`}
     >
       {/* Featured Badge */}
       {featured && (
         <div className="absolute top-4 right-4 z-10">
           <div
-            className={`${tierColor.badge} text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg`}
+            className={`${cardTheme.badge} text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg`}
           >
             <Award className="w-3 h-3" />
             Featured
@@ -67,51 +55,51 @@ export function SponsorCard({ sponsor, featured = false }: SponsorCardProps) {
         </div>
       )}
 
-      {/* Tier Badge */}
-      <div
-        className={`absolute top-4 left-4 z-10 ${tierColor.badge} text-white px-3 py-1 rounded-full text-xs font-bold uppercase shadow-lg`}
-      >
-        {sponsor.tier}
-      </div>
+      {/* Tier Badge removed */}
 
-      {/* Logo Container with Gradient Background */}
+      {/* Logo Container with light background and subtle drop shadow on logo */}
       <div
-        className={`relative h-48 ${tierColor.bg} flex items-center justify-center p-8`}
+        className={`relative h-48 ${cardTheme.bg} flex items-center justify-center p-8`}
       >
         <div className="relative w-full h-full">
           <Image
-            src={sponsor.logo}
+            src={imgSrc}
             alt={`${sponsor.name} logo`}
             fill
-            className="object-contain drop-shadow-lg"
+            className="object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            onError={() => {
+              if (imgSrc !== sponsor.logo) setImgSrc(sponsor.logo);
+            }}
           />
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1">
+      <div className="p-6 text-center">
+        <h3 className="text-xl font-extrabold text-gray-900 mb-2 tracking-tight line-clamp-1">
           {sponsor.name}
         </h3>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
+        <p className="text-gray-700 text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
           {sponsor.description}
         </p>
 
         {/* Visit Website Button */}
-        <a
-          href={sponsor.website}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-primary-700 hover:text-primary-800 font-medium text-sm group transition-colors duration-200"
-        >
-          Visit Website
-          <ExternalLink className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-200" />
-        </a>
+        <div className="flex justify-center">
+          <a
+            href={sponsor.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-neutral-800 hover:text-neutral-900 font-semibold text-sm group transition-colors duration-200"
+          >
+            Visit Website
+            <ExternalLink className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-200" />
+          </a>
+        </div>
       </div>
 
       {/* Bottom Gradient Accent */}
-      <div className={`h-1 w-full bg-gradient-to-r ${tierColor.gradient}`} />
+      <div className={`h-1 w-full bg-gradient-to-r ${cardTheme.gradient}`} />
     </motion.div>
   );
 }

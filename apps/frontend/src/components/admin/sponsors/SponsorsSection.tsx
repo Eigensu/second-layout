@@ -21,6 +21,15 @@ export function SponsorsSection() {
     filtered,
     handleCreate,
     titleCase,
+    // edit state
+    isEditOpen,
+    setIsEditOpen,
+    editing,
+    editError,
+    editForm,
+    setEditForm,
+    openEdit,
+    handleUpdate,
   } = useSponsorsSection();
 
   return (
@@ -204,6 +213,87 @@ export function SponsorsSection() {
         </div>
       )}
 
+      {/* Edit Sponsor Modal */}
+      {isEditOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg border border-gray-200">
+            <div className="px-6 py-4 border-b flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Edit Sponsor</h3>
+              <button
+                onClick={() => {
+                  if (!editing) setIsEditOpen(false);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Close edit sponsor"
+              >
+                ✕
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void handleUpdate();
+              }}
+            >
+              <div className="px-6 py-4 space-y-4">
+                {editError && (
+                  <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
+                    {editError}
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Name</label>
+                  <input
+                    required
+                    value={editForm.name}
+                    onChange={(e) =>
+                      setEditForm((f) => ({ ...f, name: e.target.value }))
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                    placeholder="Sponsor name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    required
+                    value={editForm.description}
+                    onChange={(e) =>
+                      setEditForm((f) => ({
+                        ...f,
+                        description: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                    rows={3}
+                    placeholder="Short description..."
+                  />
+                </div>
+              </div>
+              <div className="px-6 py-4 border-t flex justify-end gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => !editing && setIsEditOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  disabled={editing}
+                  type="submit"
+                >
+                  {editing ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {error && (
         <Card>
           <CardBody className="p-4 text-red-700 bg-red-50 border border-red-200 rounded-lg">
@@ -258,12 +348,14 @@ export function SponsorsSection() {
                     <button
                       className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors"
                       aria-label={`Edit ${sponsor.name}`}
+                      onClick={() => openEdit(sponsor)}
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
                       className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors"
                       aria-label={`Delete ${sponsor.name}`}
+                      onClick={() => console.log(`Delete ${sponsor.name}`)}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -272,57 +364,40 @@ export function SponsorsSection() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {sponsor.name}
                 </h3>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">Tier:</span>
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        sponsor.tier === "platinum"
-                          ? "bg-purple-100 text-purple-800"
-                          : sponsor.tier === "gold"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : sponsor.tier === "silver"
-                              ? "bg-gray-100 text-gray-800"
-                              : "bg-orange-100 text-orange-800"
-                      }`}
-                    >
-                      {titleCase(sponsor.tier)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">Website:</span>
-                    <a
-                      href={sponsor.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium text-blue-600 hover:underline truncate max-w-[60%] text-right"
-                    >
-                      {sponsor.website}
-                    </a>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">Status:</span>
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        sponsor.active
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {sponsor.active ? "Active" : "Inactive"}
-                    </span>
-                  </div>
-                  {typeof sponsor.featured !== "undefined" && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">Featured:</span>
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${sponsor.featured ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-700"}`}
-                      >
-                        {sponsor.featured ? "Yes" : "No"}
-                      </span>
-                    </div>
-                  )}
+                <div className="space-y-2"></div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">Website:</span>
+                  <a
+                    href={sponsor.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-blue-600 hover:underline truncate max-w-[60%] text-right"
+                  >
+                    {sponsor.website}
+                  </a>
                 </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">Status:</span>
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      sponsor.active
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {sponsor.active ? "Active" : "Inactive"}
+                  </span>
+                </div>
+                {typeof sponsor.featured !== "undefined" && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">Featured:</span>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${sponsor.featured ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-700"}`}
+                    >
+                      {sponsor.featured ? "Yes" : "No"}
+                    </span>
+                  </div>
+                )}
               </CardBody>
             </Card>
           ))}

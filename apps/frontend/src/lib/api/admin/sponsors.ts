@@ -50,3 +50,38 @@ export async function uploadSponsorLogo(
   );
   return response.data;
 }
+
+export interface SponsorUpdateInput {
+  name?: string;
+  description?: string;
+  logo?: string;
+  website?: string;
+  featured?: boolean;
+  active?: boolean;
+  tier?: SponsorTier;
+}
+
+export async function updateSponsor(
+  sponsorId: string,
+  input: SponsorUpdateInput
+): Promise<Sponsor> {
+  const response = await apiClient.put(
+    `${API.PREFIX}/v1/sponsors/${sponsorId}`,
+    input,
+    { headers: { "Content-Type": "application/json" } }
+  );
+  const s = (response.data?.sponsor ?? response.data) as any;
+  const sponsor: Sponsor = {
+    id: s.id ?? s._id,
+    name: s.name,
+    logo: s.logo,
+    tier: s.tier,
+    description: s.description,
+    website: s.website,
+    featured: s.featured,
+    active: s.active,
+    createdAt: s.createdAt ?? s.created_at,
+    updatedAt: s.updatedAt ?? s.updated_at,
+  };
+  return sponsor;
+}

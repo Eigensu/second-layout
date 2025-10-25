@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import type { Sponsor } from "@/types/sponsor";
 import { getSponsors } from "@/lib/api/sponsors";
-import { createSponsor, uploadSponsorLogo } from "@/lib/api/admin/sponsors";
+import { createSponsor, uploadSponsorLogo, updateSponsor } from "@/lib/api/admin/sponsors";
 
 export type SponsorFormState = {
   name: string;
@@ -30,6 +30,13 @@ export function useSponsorsSection() {
     active: true,
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
+
+  // Edit modal state
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{ name: string; description: string }>({ name: "", description: "" });
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchSponsors = useCallback(async () => {
     try {
@@ -60,6 +67,31 @@ export function useSponsorsSection() {
       mounted = false;
     };
   }, []);
+
+  const openEdit = (s: Sponsor) => {
+    setEditError(null);
+    setEditingId(s.id);
+    setEditForm({ name: s.name ?? "", description: s.description ?? "" });
+    setIsEditOpen(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editingId) return;
+    setEditError(null);
+    setEditing(true);
+    try {
+      await updateSponsor(editingId, {
+        name: editForm.name.trim(),
+        description: editForm.description.trim(),
+      });
+      await fetchSponsors();
+      setIsEditOpen(false);
+    } catch (e: any) {
+      setEditError(e?.message ?? "Failed to update sponsor");
+    } finally {
+      setEditing(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -116,14 +148,23 @@ export function useSponsorsSection() {
     form,
     logoFile,
     filtered,
+    isEditOpen,
+    editing,
+    editError,
+    editForm,
+    editingId,
     // setters
     setSearchQuery,
     setIsAddOpen,
     setForm,
     setLogoFile,
+    setIsEditOpen,
+    setEditForm,
     // actions
     handleCreate,
     fetchSponsors,
+    openEdit,
+    handleUpdate,
     // helpers
     titleCase,
   };
