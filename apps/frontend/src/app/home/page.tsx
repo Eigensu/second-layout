@@ -11,9 +11,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Spinner } from "@/components/ui/Loading";
 import { publicContestsApi, type Contest, type EnrollmentResponse } from "@/lib/api/public/contests";
 import { ROUTES } from "@/common/consts";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
   const [activeContests, setActiveContests] = useState<Contest[]>([]);
   const [loadingContests, setLoadingContests] = useState(false);
   const [contestsError, setContestsError] = useState<string | null>(null);
@@ -204,7 +206,19 @@ export default function HomePage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {activeContests.map((c) => (
-                    <div key={c.id} className="bg-white/80 backdrop-blur-sm rounded-2xl border border-primary-100 p-5 shadow-sm">
+                    <div
+                      key={c.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => router.push(`/contests/${c.id}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          router.push(`/contests/${c.id}`);
+                        }
+                      }}
+                      className="bg-white/80 backdrop-blur-sm rounded-2xl border border-primary-100 p-5 shadow-sm cursor-pointer hover:shadow md:transition"
+                    >
                       <div className="flex items-start justify-between">
                         <div className="min-w-0">
                           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">{c.name}</h3>
@@ -225,16 +239,16 @@ export default function HomePage() {
                       <div className="mt-4 flex items-center gap-2">
                         {!joinedContestIds.has(c.id) ? (
                           isAuthenticated ? (
-                            <Link href={`/contests/${c.id}`} className="inline-flex justify-center items-center px-4 py-2 rounded-lg bg-gradient-primary text-white text-sm font-medium shadow hover:opacity-95">
+                            <Link href={`/contests/${c.id}`} className="inline-flex justify-center items-center px-4 py-2 rounded-lg bg-gradient-primary text-white text-sm font-medium shadow hover:opacity-95" onClick={(e) => e.stopPropagation()}>
                               Join Contest
                             </Link>
                           ) : (
-                            <Link href={`${ROUTES.LOGIN}?next=${encodeURIComponent(`/contests/${c.id}/team`)}`} className="inline-flex justify-center items-center px-4 py-2 rounded-lg bg-gradient-primary text-white text-sm font-medium shadow hover:opacity-95">
+                            <Link href={`${ROUTES.LOGIN}?next=${encodeURIComponent(`/contests/${c.id}/team`)}`} className="inline-flex justify-center items-center px-4 py-2 rounded-lg bg-gradient-primary text-white text-sm font-medium shadow hover:opacity-95" onClick={(e) => e.stopPropagation()}>
                               Login to Join Contest
                             </Link>
                           )
                         ) : (
-                          <Link href={`/contests/${c.id}/leaderboard`} className="inline-flex justify-center items-center px-4 py-2 rounded-lg border text-sm font-medium text-primary-700 border-primary-200 hover:bg-primary-50">
+                          <Link href={`/contests/${c.id}/leaderboard`} className="inline-flex justify-center items-center px-4 py-2 rounded-lg border text-sm font-medium text-primary-700 border-primary-200 hover:bg-primary-50" onClick={(e) => e.stopPropagation()}>
                             View Leaderboard
                           </Link>
                         )}

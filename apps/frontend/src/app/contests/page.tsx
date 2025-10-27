@@ -89,7 +89,7 @@ export default function ContestsPage() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
                   <div className="min-w-0">
                     <button
-                      onClick={() => handleJoin(c.id)}
+                      onClick={() => router.push(`/contests/${c.id}`)}
                       className="text-xl sm:text-2xl font-bold text-gray-900 hover:underline block text-left leading-tight break-words"
                     >
                       {c.name}
@@ -111,7 +111,7 @@ export default function ContestsPage() {
                     {joinedContestIds.has(c.id) ? (
                       <button
                         onClick={() => router.push(`/contests/${c.id}/team`)}
-                        className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl border text-sm sm:text-base font-semibold text-primary-700 border-primary-200 hover:bg-primary-50"
+                        className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl border text-sm sm:text-base font-semibold text-primary-700 border-primary-200 hover:bg-primary-50 whitespace-nowrap"
                       >
                         View Team
                       </button>
@@ -144,9 +144,12 @@ export default function ContestsPage() {
                 <div className="rounded-3xl bg-white/90 backdrop-blur shadow-md px-4 sm:px-6 py-5 sm:py-6">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
                     <div className="min-w-0">
-                      <div className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight break-words">
+                      <button
+                        onClick={() => router.push(`/contests/${c.id}`)}
+                        className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight break-words hover:underline text-left"
+                      >
                         {c.name}
-                      </div>
+                      </button>
                       <div className="text-xs sm:text-sm text-gray-600">
                         Code: {c.code}
                       </div>
@@ -164,7 +167,7 @@ export default function ContestsPage() {
                       {joinedContestIds.has(c.id) ? (
                         <button
                           onClick={() => handleJoin(c.id)}
-                          className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl border text-sm sm:text-base font-semibold text-primary-700 border-primary-200 hover:bg-primary-50"
+                          className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl border text-sm sm:text-base font-semibold text-primary-700 border-primary-200 hover:bg-primary-50 whitespace-nowrap"
                           title="View your team for this contest"
                         >
                           View Team
