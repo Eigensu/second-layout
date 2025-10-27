@@ -149,7 +149,11 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
           {/* Left side: Logo and Nav Items */}
           <div className="flex items-center gap-1">
             {/* Logo */}
-            <div className="flex items-center pl-2 pr-3">
+            <Link
+              href="/"
+              aria-label="Go to Home"
+              className="flex items-center pl-2 pr-3 cursor-pointer"
+            >
               <Image
                 src="/logo.jpeg"
                 alt="Wall-E Arena Logo"
@@ -157,7 +161,7 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
                 height={32}
                 className="rounded-full object-cover"
               />
-            </div>
+            </Link>
             {visibleItems.map((item) => {
               const isActive = item.id === currentActiveId;
               return (
@@ -167,11 +171,11 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
                   className={`
                     flex items-center justify-center space-x-1.5 rounded-full font-medium transition-all duration-300 whitespace-nowrap
                     ${isScrolled ? "px-4 py-2" : "px-6 py-2.5"}
-                    ${
-                      isActive
-                        ? "bg-gradient-primary text-white shadow-md"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    ${isActive
+                      ? "bg-gradient-primary text-white shadow-md"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     }
+                    outline-none focus:outline-none focus-visible:outline-none focus:ring-0 active:bg-transparent
                   `}
                 >
                   {item.icon && (
@@ -262,12 +266,15 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
             )}
           </div>
         </div>
-
         {/* Mobile Navigation Header */}
         <div className="md:hidden bg-[#f9f7f3] rounded-2xl shadow-md border border-gray-200">
           <div className="flex items-center justify-between p-3">
             {/* Logo */}
-            <div className="flex items-center gap-2 -ml-1">
+            <Link
+              href="/"
+              aria-label="Go to Home"
+              className="flex items-center gap-2 -ml-1 cursor-pointer"
+            >
               <Image
                 src="/logo.jpeg"
                 alt="Wall-E Arena Logo"
@@ -278,7 +285,7 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
               <span className="font-semibold text-gray-900 text-sm">
                 Wall-E Arena
               </span>
-            </div>{" "}
+            </Link>{" "}
             {/* Hamburger Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -306,13 +313,16 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
 
       {/* Side Menu Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-in-out ${
-          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-in-out ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* Menu Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <div className="flex items-center gap-2 -ml-1">
+          <Link
+            href="/"
+            aria-label="Go to Home"
+            className="flex items-center gap-2 -ml-1 cursor-pointer"
+          >
             <Image
               src="/logo.jpeg"
               alt="Wall-E Arena Logo"
@@ -321,7 +331,7 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
               className="rounded-full object-cover"
             />
             <span className="font-semibold text-gray-900">Wall-E Arena</span>
-          </div>
+          </Link>
           <button
             onClick={() => setMobileMenuOpen(false)}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -342,11 +352,11 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
                   onClick={() => handleNavigation(item.href)}
                   className={`
                     w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all
-                    ${
-                      isActive
-                        ? "bg-gradient-primary text-white shadow-md"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    ${isActive
+                      ? "bg-gradient-primary text-white shadow-md"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                     }
+                    outline-none focus:outline-none focus-visible:outline-none focus:ring-0 active:bg-transparent
                   `}
                 >
                   {item.icon && (
