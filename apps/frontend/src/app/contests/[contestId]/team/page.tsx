@@ -28,6 +28,9 @@ import {
 } from "@/lib/api/public/contests";
 import { useTeamBuilder } from "@/hooks/useTeamBuilder";
 import { AlertDialog } from "@/components/ui/AlertDialog";
+import { LoadingScreen } from "./molecules/LoadingScreen";
+import { EnrollmentBanner } from "./molecules/EnrollmentBanner";
+import { TeamSummary } from "./molecules/TeamSummary";
 
 export default function ContestTeamBuilderPage() {
   const { isAuthenticated } = useAuth();
@@ -36,6 +39,19 @@ export default function ContestTeamBuilderPage() {
   const contestId = Array.isArray((params as any)?.contestId)
     ? (params as any).contestId[0]
     : (params as any)?.contestId;
+
+  // Enrolled contest (optional banner if already enrolled in this contest)
+  const [enrolledHere, setEnrolledHere] = useState<boolean>(false);
+  const [loadingEnrollment, setLoadingEnrollment] = useState(false);
+  const [enrollment, setEnrollment] = useState<EnrollmentResponse | null>(null);
+
+  // Existing team (enable edit mode when exists)
+  const [existingTeam, setExistingTeam] = useState<TeamResponse | null>(null);
+  const [loadingTeam, setLoadingTeam] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+
+  // Enrollment gating state
+  const [hasCheckedEnrollment, setHasCheckedEnrollment] = useState(false);
 
   const {
     // data
@@ -71,7 +87,9 @@ export default function ContestTeamBuilderPage() {
     handleSetViceCaptain,
     goToNextSlot,
     goToPrevSlot,
-  } = useTeamBuilder(typeof contestId === "string" ? contestId : undefined);
+  } = useTeamBuilder(typeof contestId === "string" ? contestId : undefined, {
+    enabled: hasCheckedEnrollment && !(enrolledHere || !!existingTeam),
+  });
 
   // Team submission states
   const [submitting, setSubmitting] = useState(false);
@@ -89,16 +107,6 @@ export default function ContestTeamBuilderPage() {
 
   // Selected contest is fixed from route
   const [selectedContestId, setSelectedContestId] = useState<string>("");
-
-  // Enrolled contest (optional banner if already enrolled in this contest)
-  const [enrolledHere, setEnrolledHere] = useState<boolean>(false);
-  const [loadingEnrollment, setLoadingEnrollment] = useState(false);
-  const [enrollment, setEnrollment] = useState<EnrollmentResponse | null>(null);
-
-  // Existing team (enable edit mode when exists)
-  const [existingTeam, setExistingTeam] = useState<TeamResponse | null>(null);
-  const [loadingTeam, setLoadingTeam] = useState(false);
-  const [editMode, setEditMode] = useState(false);
 
   // Replace player modal state
   const [showReplace, setShowReplace] = useState(false);
@@ -128,16 +136,19 @@ export default function ContestTeamBuilderPage() {
         const mine = await publicContestsApi.myEnrollments();
         if (!mounted) return;
         const e = Array.isArray(mine)
-          ? mine.find((x) => x.contest_id === contestId)
+          ? mine.find(
+              (x) => x.contest_id === contestId && x.status === "active"
+            )
           : undefined;
-        setEnrolledHere(!!e);
         setEnrollment(e || null);
         const token = localStorage.getItem(LS_KEYS.ACCESS_TOKEN);
+        let team: TeamResponse | null = null;
         if (e?.team_id && token) {
           try {
             setLoadingTeam(true);
-            const t = await getTeam(e.team_id, token);
-            if (mounted) setExistingTeam(t);
+            team = await getTeam(e.team_id, token);
+          } catch {
+            team = null;
           } finally {
             if (mounted) setLoadingTeam(false);
           }
@@ -146,18 +157,23 @@ export default function ContestTeamBuilderPage() {
           try {
             setLoadingTeam(true);
             const list = await getUserTeams(token);
-            const match = list.teams.find((t) => t.contest_id === contestId);
-            if (mounted) setExistingTeam(match || null);
+            team = list.teams.find((t) => t.contest_id === contestId) || null;
           } finally {
             if (mounted) setLoadingTeam(false);
           }
-        } else {
-          if (mounted) setExistingTeam(null);
+        }
+        if (mounted) {
+          setExistingTeam(team);
+          // Consider enrolled only if enrollment is active and a valid team exists
+          setEnrolledHere(!!(e && team));
         }
       } catch {
         // ignore
       } finally {
-        if (mounted) setLoadingEnrollment(false);
+        if (mounted) {
+          setLoadingEnrollment(false);
+          setHasCheckedEnrollment(true);
+        }
       }
     };
     load();
@@ -174,6 +190,17 @@ export default function ContestTeamBuilderPage() {
     setEditMode(false);
     setTeamName(existingTeam.team_name || "");
   }, [existingTeam]);
+
+  // Page-level loading: wait for all prerequisite requests to finish
+  const pageLoading =
+    !hasCheckedEnrollment ||
+    loadingEnrollment ||
+    (enrolledHere && loadingTeam) ||
+    (hasCheckedEnrollment && !(enrolledHere || !!existingTeam) && loading);
+
+  if (pageLoading) {
+    return <LoadingScreen />;
+  }
 
   // Replace player handlers
   const openReplace = (playerId: string) => {
@@ -243,7 +270,9 @@ export default function ContestTeamBuilderPage() {
             await publicContestsApi.enroll(selectedContestId, created.id);
           } catch (e: any) {
             showAlert(
-              e?.response?.data?.detail || e?.message || "Failed to enroll in contest",
+              e?.response?.data?.detail ||
+                e?.message ||
+                "Failed to enroll in contest",
               "Enrollment failed"
             );
           }
@@ -268,7 +297,6 @@ export default function ContestTeamBuilderPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50">
-
       <AlertDialog
         open={alertOpen}
         title={alertTitle}
@@ -294,8 +322,12 @@ export default function ContestTeamBuilderPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-white/90" />
                 Required
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-primary-700">Please enter a team name</h3>
-              <p className="mt-2 text-sm text-gray-600">You need a name to create and enroll your team.</p>
+              <h3 className="text-lg sm:text-xl font-semibold text-primary-700">
+                Please enter a team name
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">
+                You need a name to create and enroll your team.
+              </p>
 
               <div className="mt-4">
                 <input
@@ -332,72 +364,16 @@ export default function ContestTeamBuilderPage() {
         </div>
       )}
       {/* Enrolled banner */}
-      {enrolledHere && (
-        <div className="px-4 sm:px-6 mb-3">
-          <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-3">
-            You are already enrolled in this contest.
-          </div>
-        </div>
-      )}
+      {enrolledHere && <EnrollmentBanner />}
 
       <main className="container-responsive py-3 sm:py-8 px-4 sm:px-6">
         <div className="space-y-4 sm:space-y-8">
           {showViewOnly ? (
-            <>
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">
-                  Your Team
-                </h3>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    onClick={() => router.push(`/contests/${contestId}`)}
-                  >
-                    Back to Contest
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={() =>
-                      router.push(`/contests/${contestId}/leaderboard`)
-                    }
-                  >
-                    View Leaderboard
-                  </Button>
-                </div>
-              </div>
-              {loadingTeam ? (
-                <div className="text-gray-500">Loading your team...</div>
-              ) : existingTeam ? (
-                <Card className="p-6 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm text-gray-500">Team Name</div>
-                    <div className="text-lg font-semibold text-gray-900">
-                      {existingTeam.team_name}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Total Points:{" "}
-                      <span className="font-semibold text-success-700">
-                        {Math.floor(existingTeam.total_points)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="primary"
-                      onClick={() =>
-                        router.push(
-                          `/teams?contest_id=${encodeURIComponent(String(contestId || ""))}`
-                        )
-                      }
-                    >
-                      View Details
-                    </Button>
-                  </div>
-                </Card>
-              ) : (
-                <div className="text-gray-500">No team found.</div>
-              )}
-            </>
+            <TeamSummary
+              contestId={typeof contestId === "string" ? contestId : undefined}
+              team={existingTeam}
+              loadingTeam={loadingTeam}
+            />
           ) : (
             <>
               {/* Progress */}
@@ -532,7 +508,9 @@ export default function ContestTeamBuilderPage() {
                             selectedPlayers={selectedPlayers}
                             onPlayerSelect={handlePlayerSelect}
                             maxSelections={16}
-                            onBlockedSelect={(reason) => showAlert(reason, "Selection limit")}
+                            onBlockedSelect={(reason) =>
+                              showAlert(reason, "Selection limit")
+                            }
                             compact={true}
                             compactShowPrice={false}
                             isPlayerDisabled={(player) => {

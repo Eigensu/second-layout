@@ -5,9 +5,13 @@ import { fetchPlayersBySlot, type ApiPlayer } from "@/lib/api/public/players";
 
 export type UIBuildPlayer = Player & { slotId: string };
 
-export function useTeamBuilder(contestId?: string) {
+export function useTeamBuilder(
+  contestId?: string,
+  options?: { enabled?: boolean }
+) {
+  const enabled = options?.enabled ?? true;
   const [players, setPlayers] = useState<UIBuildPlayer[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(enabled);
   const [error, setError] = useState<string | null>(null);
 
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
@@ -32,6 +36,10 @@ export function useTeamBuilder(contestId?: string) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (!enabled) {
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         setError(null);
@@ -93,7 +101,7 @@ export function useTeamBuilder(contestId?: string) {
     return () => {
       cancelled = true;
     };
-  }, [contestId]);
+  }, [contestId, enabled]);
 
   const selectedCountBySlot = useMemo(() => {
     const counts: Record<string, number> = {};

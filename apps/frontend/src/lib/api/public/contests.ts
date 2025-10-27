@@ -1,9 +1,9 @@
-import apiClient from '../client';
+import apiClient from "../client";
 
-export type ContestStatus = 'upcoming' | 'live' | 'completed' | 'archived';
-export type ContestVisibility = 'public' | 'private';
-export type PointsScope = 'time_window' | 'snapshot';
-export type ContestType = 'daily' | 'full';
+export type ContestStatus = "upcoming" | "live" | "completed" | "archived";
+export type ContestVisibility = "public" | "private";
+export type PointsScope = "time_window" | "snapshot";
+export type ContestType = "daily" | "full";
 
 export interface Contest {
   id: string;
@@ -47,7 +47,7 @@ export interface EnrollmentResponse {
   team_id: string;
   user_id: string;
   contest_id: string;
-  status: 'active' | 'removed';
+  status: "active" | "removed";
   enrolled_at: string;
   removed_at?: string | null;
   initial_points: number;
@@ -72,8 +72,13 @@ export interface ContestTeamResponse {
 }
 
 export const publicContestsApi = {
-  list: async (params?: { page?: number; page_size?: number; status?: ContestStatus; q?: string }): Promise<ContestListResponse> => {
-    const response = await apiClient.get('/api/contests', { params });
+  list: async (params?: {
+    page?: number;
+    page_size?: number;
+    status?: ContestStatus;
+    q?: string;
+  }): Promise<ContestListResponse> => {
+    const response = await apiClient.get("/api/contests", { params });
     return response.data;
   },
   get: async (id: string): Promise<Contest> => {
@@ -84,20 +89,35 @@ export const publicContestsApi = {
     const response = await apiClient.get(`/api/contests/${id}/me`);
     return response.data;
   },
-  leaderboard: async (id: string, params?: { skip?: number; limit?: number }): Promise<LeaderboardResponse> => {
-    const response = await apiClient.get(`/api/contests/${id}/leaderboard`, { params });
+  leaderboard: async (
+    id: string,
+    params?: { skip?: number; limit?: number }
+  ): Promise<LeaderboardResponse> => {
+    const response = await apiClient.get(`/api/contests/${id}/leaderboard`, {
+      params,
+    });
     return response.data;
   },
-  enroll: async (contestId: string, teamId: string): Promise<EnrollmentResponse> => {
-    const response = await apiClient.post(`/api/contests/${contestId}/enroll`, { team_id: teamId });
+  enroll: async (
+    contestId: string,
+    teamId: string
+  ): Promise<EnrollmentResponse> => {
+    const response = await apiClient.post(`/api/contests/${contestId}/enroll`, {
+      team_id: teamId,
+    });
     return response.data;
   },
   myEnrollments: async (): Promise<EnrollmentResponse[]> => {
     const response = await apiClient.get(`/api/contests/enrollments/me`);
     return response.data;
   },
-  teamInContest: async (contestId: string, teamId: string): Promise<ContestTeamResponse> => {
-    const response = await apiClient.get(`/api/contests/${contestId}/teams/${teamId}`);
+  teamInContest: async (
+    contestId: string,
+    teamId: string
+  ): Promise<ContestTeamResponse> => {
+    const response = await apiClient.get(
+      `/api/contests/${contestId}/teams/${teamId}`
+    );
     return response.data;
   },
 };

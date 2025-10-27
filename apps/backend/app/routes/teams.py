@@ -531,6 +531,19 @@ async def delete_team(
             detail="You don't have permission to delete this team"
         )
     
+    # Soft-remove any active enrollments for this team to keep referential consistency
+    active_enrollments = await TeamContestEnrollment.find({
+        "team_id": team.id,
+        "status": "active",
+    }).to_list()
+
+    if active_enrollments:
+        now = datetime.utcnow()
+        for enr in active_enrollments:
+            enr.status = "removed"
+            enr.removed_at = now
+            await enr.save()
+
     await team.delete()
     
     return None

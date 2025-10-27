@@ -44,6 +44,7 @@ export default function ContestLayout({
 
   const tabHref = (tab: "leaderboard" | "team") =>
     `/contests/${contestId}/${tab}`;
+  const teamsHref = `/teams?contest_id=${encodeURIComponent(String(contestId || ""))}`;
   const isActive = (tab: "leaderboard" | "team") =>
     pathname?.endsWith(`/${tab}`) ||
     (tab === "leaderboard" && pathname === `/contests/${contestId}`);
@@ -111,10 +112,10 @@ export default function ContestLayout({
                         onClick={() => {
                           if (!isAuthenticated) {
                             router.push(
-                              `/auth/login?next=${encodeURIComponent(tabHref("team"))}`
+                              `/auth/login?next=${encodeURIComponent(teamsHref)}`
                             );
                           } else {
-                            router.push(tabHref("team"));
+                            router.push(teamsHref);
                           }
                         }}
                         className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
