@@ -8,7 +8,9 @@ function normalizeOrigin(input: string): string {
     const u = new URL(input);
     const host = u.hostname.toLowerCase();
     const isLocal = host === 'localhost' || host === '127.0.0.1';
-    if (!isLocal && u.protocol === 'http:') {
+    const isProd = process.env.NODE_ENV === 'production';
+    // In production, harden protocol to https for non-local hosts
+    if (isProd && !isLocal && u.protocol === 'http:') {
       u.protocol = 'https:';
       return u.toString().replace(/\/$/, '');
     }

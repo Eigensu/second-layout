@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import type { Sponsor } from "@/types/sponsor";
 import { getSponsors } from "@/lib/api/sponsors";
-import { createSponsor, uploadSponsorLogo, updateSponsor, deleteSponsor } from "@/lib/api/admin/sponsors";
+import {
+  createSponsor,
+  uploadSponsorLogo,
+  updateSponsor,
+  deleteSponsor,
+} from "@/lib/api/admin/sponsors";
 
 export type SponsorFormState = {
   name: string;
@@ -35,7 +40,10 @@ export function useSponsorsSection() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ name: string; description: string }>({ name: "", description: "" });
+  const [editForm, setEditForm] = useState<{
+    name: string;
+    description: string;
+  }>({ name: "", description: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -118,10 +126,18 @@ export function useSponsorsSection() {
     );
   }, [sponsors, searchQuery]);
 
-  const titleCase = (t: string) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : t);
+  const titleCase = (t: string) =>
+    t ? t.charAt(0).toUpperCase() + t.slice(1) : t;
 
   const resetForm = () => {
-    setForm({ name: "", logo: "", description: "", website: "", featured: false, active: true });
+    setForm({
+      name: "",
+      logo: "",
+      description: "",
+      website: "",
+      featured: false,
+      active: true,
+    });
     setLogoFile(null);
   };
 
@@ -129,17 +145,15 @@ export function useSponsorsSection() {
     setCreateError(null);
     setCreating(true);
     try {
-      const payload: any = {
+      const created = await createSponsor({
         name: form.name.trim(),
         logo: form.logo.trim() || "pending",
         tier: "bronze",
         description: form.description.trim(),
+        website: form.website.trim(),
         featured: form.featured,
         active: form.active,
-      };
-      const website = form.website.trim();
-      if (website) payload.website = website;
-      const created = await createSponsor(payload);
+      });
       if (logoFile) {
         await uploadSponsorLogo(created.id, logoFile);
       }
