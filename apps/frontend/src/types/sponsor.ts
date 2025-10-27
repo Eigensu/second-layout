@@ -8,7 +8,7 @@ export interface Sponsor {
   logo: string; // URL or path to the sponsor logo image
   tier: SponsorTier;
   description: string;
-  website: string;
+  website?: string;
   featured?: boolean;
   active?: boolean; // Whether the sponsor is currently active
   createdAt?: string;

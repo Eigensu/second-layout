@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import type { Sponsor } from "@/types/sponsor";
 import { getSponsors } from "@/lib/api/sponsors";
-import { createSponsor, uploadSponsorLogo, updateSponsor } from "@/lib/api/admin/sponsors";
+import { createSponsor, uploadSponsorLogo, updateSponsor, deleteSponsor } from "@/lib/api/admin/sponsors";
 
 export type SponsorFormState = {
   name: string;
@@ -37,6 +37,8 @@ export function useSponsorsSection() {
   const [editError, setEditError] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ name: string; description: string }>({ name: "", description: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const fetchSponsors = useCallback(async () => {
     try {
@@ -67,6 +69,19 @@ export function useSponsorsSection() {
       mounted = false;
     };
   }, []);
+
+  const handleDelete = async (id: string) => {
+    setDeleteError(null);
+    setDeletingId(id);
+    try {
+      await deleteSponsor(id);
+      await fetchSponsors();
+    } catch (e: any) {
+      setDeleteError(e?.message ?? "Failed to delete sponsor");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const openEdit = (s: Sponsor) => {
     setEditError(null);
@@ -114,15 +129,17 @@ export function useSponsorsSection() {
     setCreateError(null);
     setCreating(true);
     try {
-      const created = await createSponsor({
+      const payload: any = {
         name: form.name.trim(),
         logo: form.logo.trim() || "pending",
         tier: "bronze",
         description: form.description.trim(),
-        website: form.website.trim(),
         featured: form.featured,
         active: form.active,
-      });
+      };
+      const website = form.website.trim();
+      if (website) payload.website = website;
+      const created = await createSponsor(payload);
       if (logoFile) {
         await uploadSponsorLogo(created.id, logoFile);
       }
@@ -153,6 +170,8 @@ export function useSponsorsSection() {
     editError,
     editForm,
     editingId,
+    deletingId,
+    deleteError,
     // setters
     setSearchQuery,
     setIsAddOpen,
@@ -165,6 +184,7 @@ export function useSponsorsSection() {
     fetchSponsors,
     openEdit,
     handleUpdate,
+    handleDelete,
     // helpers
     titleCase,
   };

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Search, Filter, Upload, Plus, Edit, Trash2 } from "lucide-react";
@@ -30,7 +31,15 @@ export function SponsorsSection() {
     setEditForm,
     openEdit,
     handleUpdate,
+    // delete
+    handleDelete,
+    deletingId,
+    deleteError,
   } = useSponsorsSection();
+
+  // Local delete confirmation modal state
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null);
 
   return (
     <div className="space-y-4">
@@ -95,9 +104,9 @@ export function SponsorsSection() {
               }}
             >
               <div className="px-6 py-4 space-y-4">
-                {createError && (
+                {(createError || deleteError) && (
                   <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
-                    {createError}
+                    {createError || deleteError}
                   </div>
                 )}
                 <div>
@@ -128,10 +137,9 @@ export function SponsorsSection() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Website
+                      Website (optional)
                     </label>
                     <input
-                      required
                       type="url"
                       value={form.website}
                       onChange={(e) =>
@@ -353,11 +361,19 @@ export function SponsorsSection() {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                      className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label={`Delete ${sponsor.name}`}
-                      onClick={() => console.log(`Delete ${sponsor.name}`)}
+                      disabled={deletingId === sponsor.id}
+                      onClick={() => {
+                        setToDelete({ id: sponsor.id, name: sponsor.name });
+                        setIsDeleteOpen(true);
+                      }}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      {deletingId === sponsor.id ? (
+                        <span className="text-xs">Deleting...</span>
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -365,17 +381,19 @@ export function SponsorsSection() {
                   {sponsor.name}
                 </h3>
                 <div className="space-y-2"></div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Website:</span>
-                  <a
-                    href={sponsor.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-medium text-blue-600 hover:underline truncate max-w-[60%] text-right"
-                  >
-                    {sponsor.website}
-                  </a>
-                </div>
+                {sponsor.website && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">Website:</span>
+                    <a
+                      href={sponsor.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-blue-600 hover:underline truncate max-w-[60%] text-right"
+                    >
+                      {sponsor.website}
+                    </a>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">Status:</span>
                   <span
@@ -408,6 +426,60 @@ export function SponsorsSection() {
           </div>
         )}
       </div>
+      {/* Delete Confirmation Modal */}
+      {isDeleteOpen && toDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md border border-gray-200">
+            <div className="px-6 py-4 border-b flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Delete Sponsor</h3>
+              <button
+                onClick={() => {
+                  if (deletingId !== toDelete.id) setIsDeleteOpen(false);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Close delete modal"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="px-6 py-4 space-y-3">
+              {deleteError && (
+                <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
+                  {deleteError}
+                </div>
+              )}
+              <p className="text-sm text-gray-700">
+                Are you sure you want to permanently delete <span className="font-medium">{toDelete.name}</span>? This action cannot be undone.
+              </p>
+            </div>
+            <div className="px-6 py-4 border-t flex justify-end gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => deletingId !== toDelete.id && setIsDeleteOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={deletingId === toDelete.id}
+                onClick={() => {
+                  if (!toDelete) return;
+                  void (async () => {
+                    await handleDelete(toDelete.id);
+                    // Close only if deletion finished and no error
+                    if (!deleteError) setIsDeleteOpen(false);
+                  })();
+                }}
+                className="!border-red-500 !text-red-600 hover:!bg-red-50"
+              >
+                {deletingId === toDelete.id ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

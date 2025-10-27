@@ -7,7 +7,7 @@ export interface SponsorCreateInput {
   logo: string;
   tier: SponsorTier;
   description: string;
-  website: string;
+  website?: string;
   featured?: boolean;
   active?: boolean;
   display_order?: number;
@@ -33,6 +33,10 @@ export async function createSponsor(
     updatedAt: s.updatedAt ?? s.updated_at,
   };
   return sponsor;
+}
+
+export async function deleteSponsor(sponsorId: string): Promise<void> {
+  await apiClient.delete(`${API.PREFIX}/v1/sponsors/${sponsorId}`);
 }
 
 export async function uploadSponsorLogo(

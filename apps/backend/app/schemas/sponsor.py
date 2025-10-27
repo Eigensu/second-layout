@@ -10,7 +10,7 @@ class SponsorBase(BaseModel):
     logo: str = Field(..., description="URL or path to sponsor logo")
     tier: SponsorTier
     description: str = Field(..., min_length=1, max_length=500)
-    website: HttpUrl
+    website: Optional[HttpUrl] = None
     featured: bool = False
     active: bool = True
     display_order: int = Field(default=0, ge=0)
