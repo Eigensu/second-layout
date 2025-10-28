@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query, Response
 from typing import Optional
 from datetime import datetime
+from pymongo.errors import DuplicateKeyError
 
 from app.models.sponsor import Sponsor, SponsorTier
 from app.models.user import User
@@ -26,7 +27,52 @@ def sponsor_to_response(sponsor: Sponsor) -> dict:
     """Convert Sponsor document to response dict"""
     sponsor_dict = sponsor.model_dump()
     sponsor_dict["_id"] = str(sponsor.id)
+    # Normalize legacy/default priority values so response schema (ge=1) doesn't fail
+    try:
+        if int(sponsor_dict.get("priority", 0) or 0) <= 0:
+            sponsor_dict["priority"] = None
+    except Exception:
+        sponsor_dict["priority"] = None
     return sponsor_dict
+
+
+async def _get_next_priority(featured: bool) -> int:
+    """Find next available priority (max + 1) within the featured group."""
+    # Find max priority in the group; skip zeroes (legacy default)
+    sponsors = await Sponsor.find({"featured": featured, "priority": {"$gt": 0}})\
+        .sort("-priority").limit(1).to_list()
+    if not sponsors:
+        return 1
+    return int((sponsors[0].priority or 0) + 1)
+
+
+async def _get_available_priorities(featured: bool, limit_gaps: int = 20) -> dict:
+    """Compute available priorities: list of lowest gaps and the next available value."""
+    # Gather used priorities > 0
+    used_docs = await Sponsor.find({"featured": featured, "priority": {"$gt": 0}}).to_list()
+    used_set = sorted({int(getattr(s, "priority", 0)) for s in used_docs if getattr(s, "priority", 0)})
+    # Find gaps from 1..max-1
+    gaps = []
+    max_used = used_set[-1] if used_set else 0
+    seen = set(used_set)
+    for n in range(1, max_used):
+        if n not in seen:
+            gaps.append(n)
+            if len(gaps) >= limit_gaps:
+                break
+    nxt = max_used + 1 if max_used >= 1 else 1
+    return {"gaps": gaps, "next": nxt, "used": used_set}
+
+
+# Admin helper endpoint MUST be declared before '/{sponsor_id}' to avoid path conflicts
+@router.get("/available-priorities")
+async def get_available_priorities(
+    featured: bool = Query(True, description="Whether to compute priorities for featured or non-featured group"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Return available priority suggestions (gaps and next) within a group for admin UI."""
+    result = await _get_available_priorities(featured)
+    return result
 
 
 # Public endpoints (no authentication required)
@@ -69,9 +115,9 @@ async def get_sponsors(
     # Get total count
     total = await Sponsor.find(query).count()
     
-    # Get sponsors with pagination, sorted by display_order and created_at
+    # Get sponsors with pagination, sorted by priority and created_at
     sponsors = await Sponsor.find(query)\
-        .sort("+display_order", "-created_at")\
+        .sort("+priority", "-created_at")\
         .skip((page - 1) * page_size)\
         .limit(page_size)\
         .to_list()
@@ -116,6 +162,8 @@ async def get_sponsor(sponsor_id: str):
     )
 
 
+
+
 # Accept collection POST without trailing slash to prevent 307 redirects that can drop headers in some clients
 @router.post("", response_model=SponsorDetailResponse, status_code=status.HTTP_201_CREATED)
 async def create_sponsor_no_slash(
@@ -145,9 +193,22 @@ async def create_sponsor(
             detail=f"Sponsor with name '{sponsor_data.name}' already exists"
         )
     
+    # Determine priority: assign next if not provided or invalid
+    data = sponsor_data.model_dump()
+    desired_priority = data.get("priority")
+    if not isinstance(desired_priority, int) or desired_priority <= 0:
+        data["priority"] = await _get_next_priority(featured=data.get("featured", False))
+
     # Create new sponsor
-    sponsor = Sponsor(**sponsor_data.model_dump())
-    await sponsor.insert()
+    sponsor = Sponsor(**data)
+    try:
+        await sponsor.insert()
+    except DuplicateKeyError:
+        # Likely (featured, priority) unique index violation
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Priority already in use for this group. Please choose another."
+        )
     
     return SponsorDetailResponse(
         sponsor=SponsorResponse(**sponsor_to_response(sponsor))
@@ -183,13 +244,30 @@ async def update_sponsor(
                 detail=f"Sponsor with name '{sponsor_data.name}' already exists"
             )
     
-    # Update fields
+    # Update fields with priority logic
     update_data = sponsor_data.model_dump(exclude_unset=True)
     if update_data:
+        # If featured flag changes, adjust priority if not provided
+        featured_changing = "featured" in update_data and update_data["featured"] is not None and update_data["featured"] != sponsor.featured
+        if featured_changing and "priority" not in update_data:
+            update_data["priority"] = await _get_next_priority(update_data["featured"])  # type: ignore[arg-type]
+
+        # If priority not set or invalid but other fields change, keep existing
+        if "priority" in update_data:
+            pr = update_data["priority"]
+            if not isinstance(pr, int) or pr <= 0:
+                update_data["priority"] = await _get_next_priority(update_data.get("featured", sponsor.featured))
+
         update_data["updated_at"] = datetime.utcnow()
         for field, value in update_data.items():
             setattr(sponsor, field, value)
-        await sponsor.save()
+        try:
+            await sponsor.save()
+        except DuplicateKeyError:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Priority already in use for this group. Please choose another."
+            )
     
     return SponsorDetailResponse(
         sponsor=SponsorResponse(**sponsor_to_response(sponsor))
@@ -302,6 +380,9 @@ async def toggle_featured(
         )
     
     sponsor.featured = not sponsor.featured
+    # When moving groups, assign next available priority if current priority conflicts or is zero
+    if not sponsor.priority or sponsor.priority <= 0:
+        sponsor.priority = await _get_next_priority(sponsor.featured)
     sponsor.updated_at = datetime.utcnow()
     await sponsor.save()
     

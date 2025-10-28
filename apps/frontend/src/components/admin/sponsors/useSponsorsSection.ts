@@ -6,6 +6,7 @@ import {
   uploadSponsorLogo,
   updateSponsor,
   deleteSponsor,
+  getAvailablePriorities,
 } from "@/lib/api/admin/sponsors";
 
 export type SponsorFormState = {
@@ -15,6 +16,7 @@ export type SponsorFormState = {
   website: string;
   featured: boolean;
   active: boolean;
+  priority: number;
 };
 
 export function useSponsorsSection() {
@@ -33,8 +35,12 @@ export function useSponsorsSection() {
     website: "",
     featured: false,
     active: true,
+    priority: 0,
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [priorityTouched, setPriorityTouched] = useState(false);
+  const [availableFeatured, setAvailableFeatured] = useState<{ gaps: number[]; next: number } | null>(null);
+  const [availableNonFeatured, setAvailableNonFeatured] = useState<{ gaps: number[]; next: number } | null>(null);
 
   // Edit modal state
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -43,7 +49,10 @@ export function useSponsorsSection() {
   const [editForm, setEditForm] = useState<{
     name: string;
     description: string;
-  }>({ name: "", description: "" });
+    featured: boolean;
+    active: boolean;
+    priority: number;
+  }>({ name: "", description: "", featured: false, active: true, priority: 1 });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -94,7 +103,13 @@ export function useSponsorsSection() {
   const openEdit = (s: Sponsor) => {
     setEditError(null);
     setEditingId(s.id);
-    setEditForm({ name: s.name ?? "", description: s.description ?? "" });
+    setEditForm({
+      name: s.name ?? "",
+      description: s.description ?? "",
+      featured: !!s.featured,
+      active: !!s.active,
+      priority: s.priority ?? 1,
+    });
     setIsEditOpen(true);
   };
 
@@ -106,6 +121,9 @@ export function useSponsorsSection() {
       await updateSponsor(editingId, {
         name: editForm.name.trim(),
         description: editForm.description.trim(),
+        featured: editForm.featured,
+        active: editForm.active,
+        priority: Number(editForm.priority) || undefined,
       });
       await fetchSponsors();
       setIsEditOpen(false);
@@ -137,8 +155,12 @@ export function useSponsorsSection() {
       website: "",
       featured: false,
       active: true,
+      priority: 0,
     });
     setLogoFile(null);
+    setAvailableFeatured(null);
+    setAvailableNonFeatured(null);
+    setPriorityTouched(false);
   };
 
   const handleCreate = async () => {
@@ -153,6 +175,7 @@ export function useSponsorsSection() {
         website: form.website.trim(),
         featured: form.featured,
         active: form.active,
+        priority: Number(form.priority) || undefined,
       });
       if (logoFile) {
         await uploadSponsorLogo(created.id, logoFile);
@@ -166,6 +189,45 @@ export function useSponsorsSection() {
       setCreating(false);
     }
   };
+
+  // Fetch available priorities for both groups when add modal opens
+  useEffect(() => {
+    (async () => {
+      if (!isAddOpen) return;
+      try {
+        const [feat, non] = await Promise.all([
+          getAvailablePriorities(true),
+          getAvailablePriorities(false),
+        ]);
+        setAvailableFeatured({ gaps: feat.gaps, next: feat.next });
+        setAvailableNonFeatured({ gaps: non.gaps, next: non.next });
+        // Prefill based on current featured toggle unless user already typed
+        const current = form.featured ? feat : non;
+        if (!priorityTouched) setForm((f) => ({ ...f, priority: current.next }));
+      } catch (_) {
+        // Ignore; UI will still allow manual input
+      }
+    })();
+  }, [isAddOpen]);
+
+  // Refetch relevant group when featured toggle changes to update next/gaps live
+  useEffect(() => {
+    (async () => {
+      if (!isAddOpen) return;
+      try {
+        if (form.featured) {
+          const res = await getAvailablePriorities(true);
+          setAvailableFeatured({ gaps: res.gaps, next: res.next });
+          // optional prefill when toggled
+          if (!priorityTouched) setForm((f) => ({ ...f, priority: res.next }));
+        } else {
+          const res = await getAvailablePriorities(false);
+          setAvailableNonFeatured({ gaps: res.gaps, next: res.next });
+          if (!priorityTouched) setForm((f) => ({ ...f, priority: res.next }));
+        }
+      } catch (_) {}
+    })();
+  }, [form.featured, isAddOpen, priorityTouched]);
 
   return {
     // state
@@ -186,6 +248,9 @@ export function useSponsorsSection() {
     editingId,
     deletingId,
     deleteError,
+    availableFeatured,
+    availableNonFeatured,
+    priorityTouched,
     // setters
     setSearchQuery,
     setIsAddOpen,
@@ -193,6 +258,7 @@ export function useSponsorsSection() {
     setLogoFile,
     setIsEditOpen,
     setEditForm,
+    setPriorityTouched,
     // actions
     handleCreate,
     fetchSponsors,

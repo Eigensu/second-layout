@@ -15,6 +15,7 @@ export interface SponsorsViewProps {
     website: string;
     featured?: boolean;
     active?: boolean;
+    priority?: number;
   }>;
   loading: boolean;
   error: string | null;
@@ -23,6 +24,10 @@ export interface SponsorsViewProps {
 
 export function SponsorsView(props: SponsorsViewProps) {
   const { sponsors, loading, error, featuredSponsors } = props;
+  // Exclude featured from the smaller grid to avoid duplicates
+  const nonFeatured = (sponsors || [])
+    .filter((s) => !s.featured)
+    .sort((a: any, b: any) => (a.priority ?? Infinity) - (b.priority ?? Infinity));
 
   return (
     <>
@@ -98,18 +103,20 @@ export function SponsorsView(props: SponsorsViewProps) {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6 }}
             >
-              {sponsors.length > 0 ? (
+              {nonFeatured.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {sponsors.map((sponsor, index) => (
-                    <motion.div
-                      key={sponsor.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.05 * index }}
-                    >
-                      <SponsorCard sponsor={sponsor} />
-                    </motion.div>
-                  ))}
+                  {nonFeatured
+                    .sort((a, b) => (a.priority ?? Infinity) - (b.priority ?? Infinity))
+                    .map((sponsor, index) => (
+                      <motion.div
+                        key={sponsor.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.05 * index }}
+                      >
+                        <SponsorCard sponsor={sponsor} />
+                      </motion.div>
+                    ))}
                 </div>
               ) : (
                 <div className="text-center py-12">

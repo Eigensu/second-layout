@@ -14,6 +14,8 @@ class SponsorBase(BaseModel):
     featured: bool = False
     active: bool = True
     display_order: int = Field(default=0, ge=0)
+    # Priority controls ordering within featured/non-featured groups. Optional on create; backend will assign next if omitted.
+    priority: Optional[int] = Field(default=None, ge=1)
 
 
 class SponsorCreate(SponsorBase):
@@ -31,6 +33,7 @@ class SponsorUpdate(BaseModel):
     featured: Optional[bool] = None
     active: Optional[bool] = None
     display_order: Optional[int] = Field(None, ge=0)
+    priority: Optional[int] = Field(None, ge=1)
 
 
 class SponsorResponse(SponsorBase):
@@ -53,6 +56,7 @@ class SponsorResponse(SponsorBase):
                 "featured": True,
                 "active": True,
                 "display_order": 1,
+                "priority": 1,
                 "created_at": "2024-01-01T00:00:00",
                 "updated_at": "2024-01-01T00:00:00"
             }

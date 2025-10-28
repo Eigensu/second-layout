@@ -3,6 +3,7 @@ from pydantic import Field, HttpUrl, ConfigDict
 from datetime import datetime
 from typing import Optional
 from enum import Enum
+from pymongo import IndexModel
 
 
 class SponsorTier(str, Enum):
@@ -26,7 +27,10 @@ class Sponsor(Document):
     description: Optional[str] = None
     featured: bool = False
     active: bool = True
-    display_order: int = 0  # For controlling display order on frontend
+    display_order: int = 0  # Legacy field; superseded by `priority`
+    # New priority used to control ordering within featured and non-featured groups
+    # Default 0 for backward compatibility; migration will set to >= 1
+    priority: int = 0
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -38,6 +42,9 @@ class Sponsor(Document):
             "tier",
             [("display_order", 1)],
             [("created_at", -1)],
+            # Enforce uniqueness of priority per group (featured vs non-featured)
+            # Partial index so it only applies when priority > 0 (before migration many docs have 0)
+            IndexModel([("featured", 1), ("priority", 1)], unique=True, partialFilterExpression={"priority": {"$gt": 0}}),
         ]
 
     def __repr__(self):

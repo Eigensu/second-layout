@@ -11,6 +11,7 @@ export interface SponsorCreateInput {
   featured?: boolean;
   active?: boolean;
   display_order?: number;
+  priority?: number;
 }
 
 export async function createSponsor(
@@ -25,6 +26,7 @@ export async function createSponsor(
     featured: input.featured,
     active: input.active,
     display_order: input.display_order,
+    priority: input.priority,
   };
   if (typeof input.website === "string") {
     const raw = input.website.trim();
@@ -47,10 +49,21 @@ export async function createSponsor(
     website: s.website,
     featured: s.featured,
     active: s.active,
+    priority: s.priority,
     createdAt: s.createdAt ?? s.created_at,
     updatedAt: s.updatedAt ?? s.updated_at,
   };
   return sponsor;
+}
+
+export async function getAvailablePriorities(
+  featured: boolean
+): Promise<{ gaps: number[]; next: number; used: number[] }> {
+  const response = await apiClient.get(
+    `${API.PREFIX}/v1/sponsors/available-priorities`,
+    { params: { featured } }
+  );
+  return response.data as { gaps: number[]; next: number; used: number[] };
 }
 
 export async function deleteSponsor(sponsorId: string): Promise<void> {
@@ -82,6 +95,7 @@ export interface SponsorUpdateInput {
   featured?: boolean;
   active?: boolean;
   tier?: SponsorTier;
+  priority?: number;
 }
 
 export async function updateSponsor(
@@ -102,6 +116,7 @@ export async function updateSponsor(
   if (typeof input.featured === "boolean") payload.featured = input.featured;
   if (typeof input.active === "boolean") payload.active = input.active;
   if (typeof input.tier === "string") payload.tier = input.tier;
+  if (typeof input.priority === "number") payload.priority = input.priority;
 
   const response = await apiClient.put(
     `${API.PREFIX}/v1/sponsors/${sponsorId}`,
@@ -118,6 +133,7 @@ export async function updateSponsor(
     website: s.website,
     featured: s.featured,
     active: s.active,
+    priority: s.priority,
     createdAt: s.createdAt ?? s.created_at,
     updatedAt: s.updatedAt ?? s.updated_at,
   };

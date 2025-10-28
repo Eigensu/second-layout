@@ -41,13 +41,16 @@ export function useSponsorsPage() {
   }, []);
 
   const featuredSponsors = useMemo(
-    () => sponsors.filter((s) => s.featured),
+    () =>
+      sponsors
+        .filter((s) => s.featured)
+        .sort((a: any, b: any) => (a.priority ?? Infinity) - (b.priority ?? Infinity)),
     [sponsors]
   );
 
   const filteredSponsors = useMemo(() => {
-    if (selectedTier === "all") return sponsors;
-    return sponsors.filter((s) => s.tier === (selectedTier as Tier));
+    const list = selectedTier === "all" ? sponsors : sponsors.filter((s) => s.tier === (selectedTier as Tier));
+    return list.sort((a: any, b: any) => (a.priority ?? Infinity) - (b.priority ?? Infinity));
   }, [sponsors, selectedTier]);
 
   const tierCounts = useMemo(

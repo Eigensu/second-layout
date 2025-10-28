@@ -46,13 +46,15 @@ export async function getSponsors(
         website: s.website,
         featured: s.featured,
         active: s.active,
+        priority: s.priority,
         createdAt: s.createdAt ?? s.created_at,
         updatedAt: s.updatedAt ?? s.updated_at,
       })),
       total: raw.total ?? (raw.sponsors ? raw.sponsors.length : 0),
     } as SponsorsResponse;
 
-    return data.sponsors;
+    // Fallback sort by priority asc if backend didn't order (defensive)
+    return data.sponsors.sort((a, b) => (a.priority ?? Infinity) - (b.priority ?? Infinity));
   } catch (error) {
     console.error("Error fetching sponsors:", error);
     throw error;
@@ -86,6 +88,7 @@ export async function getSponsorById(id: string): Promise<Sponsor> {
       website: s.website,
       featured: s.featured,
       active: s.active,
+      priority: s.priority,
       createdAt: s.createdAt ?? s.created_at,
       updatedAt: s.updatedAt ?? s.updated_at,
     };

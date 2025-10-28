@@ -11,6 +11,7 @@ export interface Sponsor {
   website?: string;
   featured?: boolean;
   active?: boolean; // Whether the sponsor is currently active
+  priority?: number; // Ordering within featured/non-featured group
   createdAt?: string;
   updatedAt?: string;
 }
