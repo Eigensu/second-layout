@@ -84,10 +84,7 @@ export default function ContestLayout({
                     </Link>
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
-                    Code: <span className="font-mono">{contest.code}</span> •{" "}
-                    {new Date(contest.start_at).toLocaleDateString()} -{" "}
-                    {new Date(contest.end_at).toLocaleDateString()} •{" "}
-                    <span className="uppercase">{contest.status}</span>
+                    {new Date(contest.start_at).toLocaleDateString()} - {new Date(contest.end_at).toLocaleDateString()} • <span className="uppercase">{contest.status}</span>
                   </div>
                   {contest.description && (
                     <p className="text-sm text-gray-700">
@@ -100,11 +97,10 @@ export default function ContestLayout({
                     <div className="flex gap-2">
                       <Link
                         href={tabHref("leaderboard")}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
-                          isActive("leaderboard")
-                            ? "bg-gradient-primary text-white border-primary-300 shadow"
-                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                        }`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition ${isActive("leaderboard")
+                          ? "bg-gradient-primary text-white border-primary-300 shadow"
+                          : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                          }`}
                       >
                         Leaderboard
                       </Link>
@@ -118,11 +114,10 @@ export default function ContestLayout({
                             router.push(teamsHref);
                           }
                         }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
-                          isActive("team")
-                            ? "bg-gradient-primary text-white border-primary-300 shadow"
-                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                        }`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition ${isActive("team")
+                          ? "bg-gradient-primary text-white border-primary-300 shadow"
+                          : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                          }`}
                       >
                         Team
                       </button>

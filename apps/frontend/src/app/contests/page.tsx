@@ -95,9 +95,7 @@ export default function ContestsPage() {
                     >
                       {c.name}
                     </button>
-                    <div className="text-xs sm:text-sm text-gray-600">
-                      Code: {c.code}
-                    </div>
+                    {/* Contest code hidden per request */}
                     {c.description && (
                       <p className="mt-1.5 sm:mt-2 text-gray-700 text-sm line-clamp-2">
                         {c.description}
@@ -171,9 +169,7 @@ export default function ContestsPage() {
                       >
                         {c.name}
                       </button>
-                      <div className="text-xs sm:text-sm text-gray-600">
-                        Code: {c.code}
-                      </div>
+                      {/* Contest code hidden per request */}
                       {c.description && (
                         <p className="mt-1.5 sm:mt-2 text-gray-700 text-sm line-clamp-2">
                           {c.description}

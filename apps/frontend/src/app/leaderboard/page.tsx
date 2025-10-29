@@ -62,16 +62,17 @@ export default function LeaderboardIndexPage() {
             >
               <div className="min-w-0 pr-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-gray-900 truncate">{c.name}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                    c.status === "live"
-                      ? "bg-green-50 text-green-700 border-green-200"
-                      : c.status === "completed"
+                  <span className="font-semibold text-gray-900 whitespace-normal break-words">
+                    {c.name}
+                  </span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${c.status === "live"
+                    ? "bg-green-50 text-green-700 border-green-200"
+                    : c.status === "completed"
                       ? "bg-gray-50 text-gray-700 border-gray-200"
                       : c.status === "archived"
-                      ? "bg-amber-50 text-amber-700 border-amber-200"
-                      : "bg-blue-50 text-blue-700 border-blue-200"
-                  }`}>{c.status}</span>
+                        ? "bg-amber-50 text-amber-700 border-amber-200"
+                        : "bg-blue-50 text-blue-700 border-blue-200"
+                    }`}>{c.status}</span>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   {new Date(c.start_at).toLocaleDateString()} -{" "}

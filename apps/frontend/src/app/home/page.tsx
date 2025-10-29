@@ -48,6 +48,23 @@ export default function HomePage() {
     loadActive();
   }, []);
 
+  // Humanize time remaining until a given ISO date string
+  const formatEndsIn = (isoDate: string): string => {
+    const now = new Date().getTime();
+    const end = new Date(isoDate).getTime();
+    const diffMs = end - now;
+    if (isNaN(end)) return "Ends soon";
+    if (diffMs <= 0) return "Ended";
+
+    const minutes = Math.floor(diffMs / (1000 * 60));
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (days >= 1) return `Ends in ${days} day${days === 1 ? "" : "s"}`;
+    if (hours >= 1) return `Ends in ${hours} hour${hours === 1 ? "" : "s"}`;
+    return `Ends in ${Math.max(1, minutes)} min${minutes === 1 ? "" : "s"}`;
+  };
+
   useEffect(() => {
     const loadUpcoming = async () => {
       try {
@@ -248,7 +265,7 @@ export default function HomePage() {
                             </p>
                           )}
                           <div className="text-xs text-gray-500 mt-1">
-                            Ends: {new Date(c.end_at).toLocaleString()}
+                            {formatEndsIn(c.end_at)}
                           </div>
                           <div className="mt-2 flex items-center gap-2">
                             {!joinedContestIds.has(c.id) ? (
@@ -301,7 +318,7 @@ export default function HomePage() {
                           />
                         </div>
                       </div>
-                      
+
                     </div>
                   ))}
                 </div>

@@ -64,21 +64,21 @@ export default function ContestDetailsPage() {
               Contests
             </div>
           </div> */}
-          <div className="text-center mb-2 -mt-24">
-            <div className="flex justify-center -mt-6">
+          <div className="text-center mb-2 -mt-12">
+            <div className="flex justify-center mt-0">
               <Image
                 src="/TPL S11 Sponsor/Title Sponsor.png"
                 alt="Title Sponsor"
-                width={140}
-                height={140}
-                className="h-24 w-auto sm:h-36 object-contain"
+                width={180}
+                height={180}
+                className="h-28 w-auto sm:h-40 object-contain"
                 priority
               />
             </div>
-            <div className="-mt-8 text-xs sm:text-sm font-semibold text-primary-700 tracking-wide">
+            <div className="pt-0 mt-0 text-xs sm:text-sm font-semibold text-primary-700 tracking-wide">
               presents
             </div>
-            <h1 className="mt-2 text-2xl sm:text-4xl lg:text-3xl font-bold tracking-tight text-primary-700 leading-tight">
+            <h1 className="mt-2 pb-2 sm:pb-3 text-2xl sm:text-4xl lg:text-3xl font-bold tracking-tight text-primary-700 leading-tight">
               {contest.name}
             </h1>
           </div>
