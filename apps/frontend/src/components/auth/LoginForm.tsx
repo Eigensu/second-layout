@@ -110,13 +110,6 @@ export function LoginForm() {
               <span className="ml-2 text-sm text-gray-700">Remember me</span>
             </label>
             {/* Placeholder for future password reset */}
-            <button
-              type="button"
-              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-              disabled
-            >
-              Forgot password?
-            </button>
           </div>
 
           {/* Submit Button */}

@@ -48,6 +48,12 @@ const DEFAULT_ITEMS: PillNavItem[] = [
     icon: <Trophy className="w-4 h-4" />,
   },
   {
+    id: "my-teams",
+    label: "My Teams",
+    href: "/teams",
+    icon: <Users className="w-4 h-4" />,
+  },
+  {
     id: "leaderboard",
     label: "Leaderboard",
     href: "/leaderboard",
@@ -171,9 +177,10 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
                   className={`
                     flex items-center justify-center space-x-1.5 rounded-full font-medium transition-all duration-300 whitespace-nowrap
                     ${isScrolled ? "px-4 py-2" : "px-6 py-2.5"}
-                    ${isActive
-                      ? "bg-gradient-primary text-white shadow-md"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    ${
+                      isActive
+                        ? "bg-gradient-primary text-white shadow-md"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     }
                     outline-none focus:outline-none focus-visible:outline-none focus:ring-0 active:bg-transparent
                   `}
@@ -313,8 +320,9 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
 
       {/* Side Menu Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-in-out ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-in-out ${
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         {/* Menu Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -352,9 +360,10 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
                   onClick={() => handleNavigation(item.href)}
                   className={`
                     w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all
-                    ${isActive
-                      ? "bg-gradient-primary text-white shadow-md"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    ${
+                      isActive
+                        ? "bg-gradient-primary text-white shadow-md"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                     }
                     outline-none focus:outline-none focus-visible:outline-none focus:ring-0 active:bg-transparent
                   `}

@@ -386,19 +386,19 @@ export default function HomePage() {
                       <div className="text-xs text-gray-500 mt-2">
                         Starts: {new Date(c.start_at).toLocaleString()}
                       </div>
-                      <div className="mt-4 hidden sm:flex items-center gap-2">
+                      <div className="mt-4 flex items-center gap-2">
                         {!joinedContestIds.has(c.id) ? (
                           isAuthenticated ? (
                             <Link
                               href={`/contests/${c.id}`}
-                              className="inline-flex justify-center items-center px-4 py-2 rounded-lg bg-gradient-primary text-white text-sm font-medium shadow hover:opacity-95"
+                              className="inline-flex justify-center items-center px-4 py-2 rounded-lg bg-gradient-primary text-white text-sm font-medium shadow hover:opacity-95 w-full sm:w-auto"
                             >
                               Join Contest
                             </Link>
                           ) : (
                             <Link
                               href={`${ROUTES.LOGIN}?next=${encodeURIComponent(`/contests/${c.id}/team`)}`}
-                              className="inline-flex justify-center items-center px-4 py-2 rounded-lg bg-gradient-primary text-white text-sm font-medium shadow hover:opacity-95"
+                              className="inline-flex justify-center items-center px-4 py-2 rounded-lg bg-gradient-primary text-white text-sm font-medium shadow hover:opacity-95 w-full sm:w-auto"
                             >
                               Login to Join Contest
                             </Link>
@@ -406,7 +406,7 @@ export default function HomePage() {
                         ) : (
                           <Link
                             href={`/contests/${c.id}/team`}
-                            className="inline-flex justify-center items-center px-4 py-2 rounded-lg border text-sm font-medium text-primary-700 border-primary-200 hover:bg-primary-50"
+                            className="inline-flex justify-center items-center px-4 py-2 rounded-lg border text-sm font-medium text-primary-700 border-primary-200 hover:bg-primary-50 w-full sm:w-auto"
                           >
                             Edit Team
                           </Link>
