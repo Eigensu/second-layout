@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Trophy } from "lucide-react";
+import { Trophy, Star, Play } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
 import { useRouter } from "next/navigation";
 import {
   publicContestsApi,
@@ -150,7 +151,12 @@ export default function ContestsPage() {
             </div>
           ))}
           {!loading && activeContests.length === 0 && (
-            <div className="text-gray-600">No active contests.</div>
+            <EmptyState
+              title="No active contests"
+              description="There are currently no active contests. Keep an eye on upcoming contests or explore other categories."
+              icon={<Star className="w-10 h-10" />}
+              primaryAction={{ label: "Explore Contests", href: "/contests" }}
+            />
           )}
         </div>
 
@@ -225,7 +231,15 @@ export default function ContestsPage() {
               </div>
             ))}
             {!loading && liveContests.length === 0 && (
-              <div className="text-gray-600">No live contests.</div>
+              <EmptyState
+                title="No live contests"
+                description="There are no contests running live now. Browse upcoming contests or create your own if you have admin rights."
+                icon={<Play className="w-10 h-10" />}
+                primaryAction={{
+                  label: "See Upcoming",
+                  href: "/contests?filter=upcoming",
+                }}
+              />
             )}
           </div>
         </div>

@@ -5,6 +5,7 @@ export { Badge } from './Badge'
 export { Avatar } from './Avatar'
 export { Skeleton, Spinner, PageLoader, CardSkeleton } from './Loading'
 export { StepCard, ProgressIndicator, StepNavigation } from './Step'
+export { default as EmptyState } from './EmptyState'
 
 // Types
 export type { StepProps, ProgressIndicatorProps, StepNavigationProps } from './Step'

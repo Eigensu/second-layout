@@ -52,7 +52,9 @@ export default function ContestDetailsPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-4">
-      {loading && <PageLoader message="wallearena is getting your contest..." />}
+      {loading && (
+        <PageLoader message="wallearena is getting your contest..." />
+      )}
       {error && <div className="text-red-600">{error}</div>}
       {contest && (
         <>
@@ -67,7 +69,7 @@ export default function ContestDetailsPage() {
           <div className="text-center mb-2 -mt-12">
             <div className="flex justify-center mt-0">
               <Image
-                src="/World Tower Premier League Season 7 Sponsor/Title Sponsor.png"
+                src="/MWPL Season 2 Sponsor/Title Sponsor.png"
                 alt="Title Sponsor"
                 width={180}
                 height={180}
