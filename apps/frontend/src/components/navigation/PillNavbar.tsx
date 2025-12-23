@@ -173,9 +173,10 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
                   onClick={() => handleNavigation(item.href)}
                   className={`
                     flex items-center justify-center space-x-1.5 rounded-full font-medium whitespace-nowrap px-6 py-2.5 border
-                    ${isActive
-                      ? "bg-gradient-brand text-text-main border-accent-pink-soft"
-                      : "text-text-muted hover:text-text-main hover:bg-bg-card-soft border-transparent"
+                    ${
+                      isActive
+                        ? "bg-gradient-brand text-text-main border-accent-pink-soft"
+                        : "text-text-muted hover:text-text-main hover:bg-bg-card-soft border-transparent"
                     }
                     outline-none focus:outline-none focus-visible:outline-none focus:ring-0 active:bg-transparent
                   `}
@@ -234,18 +235,20 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
                       <LayoutDashboard className="h-4 w-4 text-accent-pink-500" />
                       <span>Dashboard</span>
                     </div>
-                    <div
-                      role="menuitem"
-                      tabIndex={0}
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        router.push("/admin");
-                      }}
-                      className="cursor-pointer select-none flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-text-main hover:bg-bg-card-soft"
-                    >
-                      <Settings className="h-4 w-4 text-accent-pink-500" />
-                      <span>Admin</span>
-                    </div>
+                    {user?.is_admin && (
+                      <div
+                        role="menuitem"
+                        tabIndex={0}
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          router.push("/admin");
+                        }}
+                        className="cursor-pointer select-none flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-text-main hover:bg-bg-card-soft"
+                      >
+                        <Settings className="h-4 w-4 text-accent-pink-500" />
+                        <span>Admin</span>
+                      </div>
+                    )}
                     <div className="my-1 h-px bg-border-subtle" />
                     <div
                       role="menuitem"
@@ -316,8 +319,9 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
 
       {/* Side Menu Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-bg-card shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-in-out ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`fixed top-0 right-0 h-full w-80 bg-bg-card shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-in-out ${
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         {/* Menu Header */}
         <div className="flex items-center justify-between p-4 border-b border-border-subtle">
@@ -354,9 +358,10 @@ const PillNavbar: React.FC<PillNavbarProps> = ({
                   onClick={() => handleNavigation(item.href)}
                   className={`
                     w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium
-                    ${isActive
-                      ? "bg-gradient-primary text-white shadow-md"
-                      : "text-text-muted hover:bg-bg-card-soft hover:text-text-main"
+                    ${
+                      isActive
+                        ? "bg-gradient-primary text-white shadow-md"
+                        : "text-text-muted hover:bg-bg-card-soft hover:text-text-main"
                     }
                     outline-none focus:outline-none focus-visible:outline-none focus:ring-0 active:bg-transparent
                   `}

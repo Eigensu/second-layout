@@ -357,7 +357,7 @@ export default function AdminManageContestPage() {
   }, [contestId]);
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requireAdmin={true}>
       <div className="max-w-6xl mx-auto p-4 space-y-6 text-text-main">
         <AlertDialog
           open={alertOpen}

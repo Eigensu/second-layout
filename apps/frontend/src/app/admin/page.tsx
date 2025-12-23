@@ -5,7 +5,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 
 export default function AdminPage() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requireAdmin={true}>
       <AdminLayout />
     </ProtectedRoute>
   );
