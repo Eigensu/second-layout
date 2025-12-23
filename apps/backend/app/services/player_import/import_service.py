@@ -68,10 +68,14 @@ class PlayerImportService:
             )
 
         # Parse file
+        import io
+        
+        # Parse file
+        file_stream = io.BytesIO(content)
         if file_format == "xlsx":
-            headers, rows = parse_xlsx(file.file, header_row)
+            headers, rows = parse_xlsx(file_stream, header_row)
         else:
-            headers, rows = parse_csv(file.file, header_row)
+            headers, rows = parse_csv(file_stream, header_row)
 
         # Validate row count
         if len(rows) > MAX_ROWS:
