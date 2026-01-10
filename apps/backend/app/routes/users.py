@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from datetime import datetime
 
-from app.models.user import User
-from app.schemas.user import UserResponse
+from app.models.user import User, RefreshToken
+from app.schemas.user import UserResponse, DeleteAccountRequest
 from app.utils.dependencies import get_current_active_user
 from app.utils.gridfs import open_avatar_stream
+from app.utils.security import verify_password
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
@@ -70,15 +71,32 @@ async def update_current_user(
 
 @router.delete("/me")
 async def delete_current_user(
+    request: DeleteAccountRequest,
     current_user: User = Depends(get_current_active_user)
 ):
-    """Delete current user account"""
+    """Soft delete current user account with password verification"""
 
-    # Soft delete by deactivating
+    # Verify password
+    if not verify_password(request.password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password"
+        )
+
+    # Soft delete by deactivating and recording timestamp
     current_user.is_active = False
+    current_user.deleted_at = datetime.utcnow()
+    current_user.deletion_reason = request.reason
+    current_user.updated_at = datetime.utcnow()
     await current_user.save()
 
-    return {"message": "Account successfully deactivated"}
+    # Revoke all refresh tokens for this user
+    await RefreshToken.find(
+        RefreshToken.user_id == current_user.id,
+        RefreshToken.revoked == False
+    ).update({"$set": {"revoked": True}})
+
+    return {"message": "Account successfully deleted"}
 
 
 @router.get("/{user_id}/avatar")

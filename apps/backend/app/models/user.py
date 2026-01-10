@@ -13,6 +13,8 @@ class User(Document):
     full_name: Optional[str] = None
     mobile: Optional[str] = None
     is_active: bool = True
+    deleted_at: Optional[datetime] = None
+    deletion_reason: Optional[str] = None
     is_verified: bool = False
     is_admin: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)

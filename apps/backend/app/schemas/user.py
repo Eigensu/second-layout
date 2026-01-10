@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime
 
@@ -18,3 +18,9 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class DeleteAccountRequest(BaseModel):
+    """Schema for account deletion request"""
+    password: str = Field(..., min_length=1, description="Current password for verification")
+    reason: Optional[str] = Field(None, max_length=500, description="Optional deletion reason")
