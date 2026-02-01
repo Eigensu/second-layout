@@ -67,6 +67,7 @@ export default function AdminManageContestPage() {
   // General settings
   const [editName, setEditName] = useState<string>("");
   const [editLogoUrl, setEditLogoUrl] = useState<string>("");
+  const [editLogoFile, setEditLogoFile] = useState<File | null>(null);
   const [redirectAfterSave, setRedirectAfterSave] = useState(false);
 
   // No fixed steps; free time input via <input type="time">
@@ -162,6 +163,18 @@ export default function AdminManageContestPage() {
     } catch (e: any) {
       showAlert(e?.message || "Failed to save settings", "Update failed");
     } finally {
+      if (editLogoFile && contest) {
+        try {
+          await adminContestsApi.uploadLogo(contest.id, editLogoFile);
+          // Refresh to show new logo
+          const refreshed = await adminContestsApi.get(contest.id);
+          setContest(refreshed);
+          reseedFrom(refreshed); // This will update the URL in the form
+          setEditLogoFile(null); // Clear file input
+        } catch (uploadErr) {
+          showAlert("Settings saved but logo upload failed", "Warning");
+        }
+      }
       setSavingSettings(false);
     }
   };
@@ -455,15 +468,32 @@ export default function AdminManageContestPage() {
                   </div>
                   <div className="flex flex-col md:col-span-3">
                     <label className="text-sm text-text-muted mb-1">
-                      Logo URL
+                      Contest Logo
                     </label>
-                    <input
-                      className="border border-border-subtle rounded p-2 w-full bg-bg-card text-text-main placeholder:text-text-muted"
-                      value={editLogoUrl}
-                      onChange={(e) => setEditLogoUrl(e.target.value)}
-                      placeholder="https://..."
-                    />
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="w-full text-sm text-text-main file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            setEditLogoFile(e.target.files[0]);
+                          }
+                        }}
+                      />
+                      {editLogoFile && (
+                        <div className="text-xs text-text-success">
+                          File selected: {editLogoFile.name}
+                        </div>
+                      )}
+                      {!editLogoFile && editLogoUrl && (
+                        <div className="text-xs text-text-muted break-all">
+                          Current: {editLogoUrl}
+                        </div>
+                      )}
+                    </div>
                   </div>
+
                   <div className="flex flex-col">
                     <label className="text-sm text-text-muted mb-1">
                       Start (IST)

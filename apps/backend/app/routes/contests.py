@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Header
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Header, Response
 from typing import Optional, List, Dict, Annotated
 from beanie import PydanticObjectId
 from beanie.operators import Or, RegEx
@@ -6,6 +6,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from bson import ObjectId
 from app.utils.timezone import now_ist, to_ist
+from app.utils.gridfs import open_contest_logo_stream
 
 from app.models.contest import Contest
 from app.models.team_contest_enrollment import TeamContestEnrollment
@@ -71,7 +72,7 @@ async def to_contest_response(contest: Contest, skip_save: bool = False) -> Cont
         from app.models.settings import GlobalSettings
         settings = await GlobalSettings.get_instance()
         if settings.default_contest_logo_file_id:
-            logo_url = "/api/admin/settings/logo"
+            logo_url = "/api/settings/logo"
 
     return ContestResponse(
         id=str(contest.id),
@@ -502,8 +503,7 @@ async def get_team_in_contest(contest_id: str, team_id: str, current_user: Optio
     )
 
 
-from fastapi import Response
-from app.utils.gridfs import open_contest_logo_stream
+
 
 @router.get("/{contest_id}/logo")
 async def get_contest_logo(contest_id: str):

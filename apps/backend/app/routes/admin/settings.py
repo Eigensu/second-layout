@@ -19,9 +19,15 @@ async def upload_default_logo(
 ):
     settings = await GlobalSettings.get_instance()
 
+    import logging
+    logger = logging.getLogger(__name__)
+
     # Delete old logo if it exists
     if settings.default_contest_logo_file_id:
-        await delete_contest_logo_from_gridfs(settings.default_contest_logo_file_id)
+        try:
+            await delete_contest_logo_from_gridfs(settings.default_contest_logo_file_id)
+        except Exception as e:
+            logger.warning(f"Failed to delete old default logo {settings.default_contest_logo_file_id}: {e}")
 
     # Save new logo
     try:
@@ -31,21 +37,8 @@ async def upload_default_logo(
         await settings.save()
         
         return UploadResponse(
-            url="/api/admin/settings/logo",
+            url="/api/settings/logo",
             message="Default logo uploaded successfully"
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to upload logo: {str(e)}")
-
-@router.get("/logo")
-async def get_default_logo():
-    """Serve the default contest logo"""
-    settings = await GlobalSettings.get_instance()
-    
-    if not settings.default_contest_logo_file_id:
-        # Fallback or 404? 
-        raise HTTPException(status_code=404, detail="Default logo not found")
-
-    stream, content_type = await open_contest_logo_stream(settings.default_contest_logo_file_id)
-    data = await stream.read()
-    return Response(content=data, media_type=content_type)

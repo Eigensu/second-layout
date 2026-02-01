@@ -10,7 +10,7 @@ export const adminSettingsApi = {
     return response.data;
   },
   getDefaultLogo: async (): Promise<Blob> => {
-    const response = await apiClient.get('/api/admin/settings/logo', {
+    const response = await apiClient.get('/api/settings/logo', {
       responseType: 'blob',
     });
     return response.data;

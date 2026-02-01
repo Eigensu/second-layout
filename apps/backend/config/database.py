@@ -52,9 +52,6 @@ async def connect_to_mongo():
                 TeamContestEnrollment,
                 PasswordResetSession,
                 PasswordResetToken,
-                TeamContestEnrollment,
-                PasswordResetSession,
-                PasswordResetToken,
                 GlobalSettings,
             ]
         )
