@@ -16,6 +16,7 @@ class Contest(Document):
     name: str
 
     description: Optional[str] = None
+    logo_url: Optional[str] = None
 
     # time window
     start_at: datetime

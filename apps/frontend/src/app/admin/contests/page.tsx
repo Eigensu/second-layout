@@ -27,6 +27,7 @@ export default function AdminContestsPage() {
   const [form, setForm] = useState<ContestCreate>({
     code: "",
     name: "",
+    logo_url: "",
     start_at: new Date().toISOString(),
     end_at: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
     visibility: "public",
@@ -38,7 +39,7 @@ export default function AdminContestsPage() {
   const [creating, setCreating] = useState(false);
   const [availableTeams, setAvailableTeams] = useState<string[]>([]);
   const [selectedAllowedTeams, setSelectedAllowedTeams] = useState<string[]>(
-    []
+    [],
   );
   const [allowedDropdownOpen, setAllowedDropdownOpen] =
     useState<boolean>(false);
@@ -90,8 +91,8 @@ export default function AdminContestsPage() {
         const data: Array<{ team?: string | null }> = await res.json();
         const uniq = Array.from(
           new Set(
-            data.map((p) => (p.team || "").trim()).filter((t) => t.length > 0)
-          )
+            data.map((p) => (p.team || "").trim()).filter((t) => t.length > 0),
+          ),
         ).sort();
         setAvailableTeams(uniq);
       } catch {
@@ -161,7 +162,7 @@ export default function AdminContestsPage() {
           form.contest_type === "daily" ? selectedAllowedTeams : [],
       };
       await adminContestsApi.create(payload);
-      setForm({ ...form, code: "", name: "" });
+      setForm({ ...form, code: "", name: "", logo_url: "" });
       // Reset only code/name; keep IST inputs seeded
       setSelectedAllowedTeams([]);
       await load();
@@ -286,6 +287,19 @@ export default function AdminContestsPage() {
                   className="w-full border border-border-subtle bg-bg-card text-text-main placeholder:text-text-muted p-2 rounded"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-text-muted">
+                  Logo URL
+                </label>
+                <input
+                  className="w-full border border-border-subtle bg-bg-card text-text-main placeholder:text-text-muted p-2 rounded"
+                  value={form.logo_url || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, logo_url: e.target.value })
+                  }
+                  placeholder="https://..."
                 />
               </div>
               <div>
@@ -445,7 +459,7 @@ export default function AdminContestsPage() {
                                 setSelectedAllowedTeams((prev) =>
                                   prev.includes(t)
                                     ? prev.filter((x) => x !== t)
-                                    : [...prev, t]
+                                    : [...prev, t],
                                 );
                               }}
                             >

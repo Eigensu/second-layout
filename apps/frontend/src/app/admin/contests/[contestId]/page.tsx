@@ -42,7 +42,7 @@ export default function AdminManageContestPage() {
   const [userList, setUserList] = useState<UsersWithTeamsResponse | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [userTeams, setUserTeams] = useState<AdminUserTeamsResponse | null>(
-    null
+    null,
   );
   const [selectedTeamIds, setSelectedTeamIds] = useState<
     Record<string, boolean>
@@ -66,6 +66,7 @@ export default function AdminManageContestPage() {
   const [savingSettings, setSavingSettings] = useState(false);
   // General settings
   const [editName, setEditName] = useState<string>("");
+  const [editLogoUrl, setEditLogoUrl] = useState<string>("");
   const [redirectAfterSave, setRedirectAfterSave] = useState(false);
 
   // No fixed steps; free time input via <input type="time">
@@ -115,6 +116,7 @@ export default function AdminManageContestPage() {
     setEditContestType(c.contest_type);
     setEditAllowedTeamsRaw((c.allowed_teams || []).join(", "));
     setEditName(c.name);
+    setEditLogoUrl(c.logo_url || "");
   };
 
   const saveAllSettings = async () => {
@@ -149,6 +151,7 @@ export default function AdminManageContestPage() {
         payload.allowed_teams = [];
       }
       if (editName.trim()) payload.name = editName.trim();
+      if (editLogoUrl !== undefined) payload.logo_url = editLogoUrl;
 
       const updated = await adminContestsApi.update(contest.id, payload);
 
@@ -191,7 +194,7 @@ export default function AdminManageContestPage() {
     } catch (e: any) {
       showAlert(
         e?.message || "Failed to toggle contest status",
-        "Update failed"
+        "Update failed",
       );
     } finally {
       setToggling(false);
@@ -298,7 +301,7 @@ export default function AdminManageContestPage() {
 
   const enrollSelected = async () => {
     const team_ids = Object.keys(selectedTeamIds).filter(
-      (k) => selectedTeamIds[k]
+      (k) => selectedTeamIds[k],
     );
     if (team_ids.length === 0) {
       showAlert("Select at least one team", "Validation");
@@ -450,6 +453,17 @@ export default function AdminManageContestPage() {
                       onChange={(e) => setEditName(e.target.value)}
                     />
                   </div>
+                  <div className="flex flex-col md:col-span-3">
+                    <label className="text-sm text-text-muted mb-1">
+                      Logo URL
+                    </label>
+                    <input
+                      className="border border-border-subtle rounded p-2 w-full bg-bg-card text-text-main placeholder:text-text-muted"
+                      value={editLogoUrl}
+                      onChange={(e) => setEditLogoUrl(e.target.value)}
+                      placeholder="https://..."
+                    />
+                  </div>
                   <div className="flex flex-col">
                     <label className="text-sm text-text-muted mb-1">
                       Start (IST)
@@ -517,7 +531,7 @@ export default function AdminManageContestPage() {
                       value={editVisibility || ""}
                       onChange={(e) =>
                         setEditVisibility(
-                          e.target.value as Contest["visibility"]
+                          e.target.value as Contest["visibility"],
                         )
                       }
                     >
@@ -535,7 +549,7 @@ export default function AdminManageContestPage() {
                       value={editContestType || ""}
                       onChange={(e) =>
                         setEditContestType(
-                          e.target.value as Contest["contest_type"]
+                          e.target.value as Contest["contest_type"],
                         )
                       }
                     >
