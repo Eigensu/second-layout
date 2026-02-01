@@ -78,8 +78,9 @@ class ContestResponse(BaseModel):
     id: str
     code: str
     name: str
-    description: Optional[str]
-    logo_url: Optional[str]
+    description: Optional[str] = None
+    logo_url: Optional[str] = None
+    logo_file_id: Optional[str] = None
     start_at: datetime
     end_at: datetime
     status: str

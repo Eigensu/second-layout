@@ -121,4 +121,12 @@ export const adminContestsApi = {
     const response = await apiClient.put(`/api/admin/contests/${contestId}/player-points`, body);
     return response.data;
   },
+  uploadLogo: async (contestId: string, file: File): Promise<{ url: string; message: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post(`/api/admin/contests/${contestId}/upload-logo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
 };

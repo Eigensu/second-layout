@@ -30,11 +30,21 @@ from app.models.user import User
 router = APIRouter(prefix="/api/admin/contests", tags=["Admin - Contests"])
 
 async def to_response(contest: Contest) -> ContestResponse:
+    logo_url = contest.logo_url
+    if not logo_url and not contest.logo_file_id:
+        # Fallback to default tournament logo
+        from app.models.settings import GlobalSettings
+        settings = await GlobalSettings.get_instance()
+        if settings.default_contest_logo_file_id:
+            logo_url = "/api/admin/settings/logo"
+
     return ContestResponse(
         id=str(contest.id),
         code=contest.code,
         name=contest.name,
         description=contest.description,
+        logo_url=logo_url,
+        logo_file_id=contest.logo_file_id,
         start_at=to_ist(contest.start_at),
         end_at=to_ist(contest.end_at),
         status=contest.status,
@@ -45,6 +55,7 @@ async def to_response(contest: Contest) -> ContestResponse:
         created_at=to_ist(contest.created_at),
         updated_at=to_ist(contest.updated_at),
     )
+
 
 
 @router.post("", response_model=ContestResponse, status_code=201)

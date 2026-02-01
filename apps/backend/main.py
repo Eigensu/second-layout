@@ -19,7 +19,9 @@ from app.routes.admin import (
     slots_router as admin_slots_router,
     players_import_router as admin_players_import_router,
     contests_router as admin_contests_router,
+    contests_router as admin_contests_router,
     users_teams_router as admin_users_teams_router,
+    settings_router as admin_settings_router,
 )
 
 # Logging configuration
@@ -73,6 +75,7 @@ app.include_router(admin_slots_router)
 app.include_router(admin_players_import_router)
 app.include_router(admin_contests_router)
 app.include_router(admin_users_teams_router)
+app.include_router(admin_settings_router)
 app.include_router(players_router)
 app.include_router(players_hot_router)
 app.include_router(slots_router)
